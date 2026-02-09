@@ -1,0 +1,139 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div style="padding: 20px; max-width: 900px;">
+    <h1 style="color: #333; margin-bottom: 30px;">📥 {{ title }}</h1>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+        <h3 style="margin-top: 0;">📋 Muhim ko'rsatmalar:</h3>
+        <ul style="margin-bottom: 0;">
+            <li>Excel fayl <strong>.xlsx</strong> yoki <strong>.xls</strong> formatida bo'lishi kerak</li>
+            <li><strong>Birinchi qator</strong> - ustun nomlari (sarlavhalar) bo'lishi kerak</li>
+            <li>Har bir qator <strong>alohida tinglovchi</strong> sifatida saqlanadi</li>
+            <li>Mavjud yozuvlar (seriya + raqam bo'yicha) <strong>avtomatik yangilanadi</strong></li>
+            <li>Faqat <strong>"F.I.SH"</strong> yoki <strong>"Tinglovchi"</strong> ustuni majburiy!</li>
+            <li>Agar <strong>"Raqami"</strong> bo'lmasa - avtomatik raqam beriladi</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; 
+            background: {% if message.tags == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; 
+            color: {% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %}; 
+            border: 1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#6ee7b7{% endif %};">
+            {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" style="background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">Hujjat turi:</label>
+            <select name="record_type" style="width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 16px; background: #f9fafb;">
+                <option value="certificate">📜 Malaka oshirish (MO) - Sertifikat</option>
+                <option value="diploma">🎓 Qayta tayyorlash (QT) - Diplom</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">Excel fayl:</label>
+            <div style="border: 2px dashed #d1d5db; border-radius: 10px; padding: 30px; text-align: center; background: #f9fafb;">
+                {{ form.excel_file }}
+                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">📁 .xlsx yoki .xls formatida fayl tanlang</p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 35px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
+                📥 Import qilish
+            </button>
+            
+            <a href="{% url 'admin:listener_download_template' %}?record_type=certificate" 
+               style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                📄 MO Namuna
+            </a>
+            
+            <a href="{% url 'admin:listener_download_template' %}?record_type=diploma" 
+               style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                📄 QT Namuna
+            </a>
+            
+            <a href=".." style="background: #6b7280; color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                ← Orqaga
+            </a>
+        </div>
+    </form>
+
+    <div style="margin-top: 35px; background: #f3f4f6; padding: 25px; border-radius: 12px;">
+        <h4 style="color: #374151; margin-top: 0;">📊 Ustunlar ro'yxati:</h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #10b981;">
+                <h5 style="color: #10b981; margin-top: 0;">📜 Qabul qilinadigan ustun nomlari:</h5>
+                <ul style="font-size: 13px; color: #4b5563; line-height: 1.8;">
+                    <li><strong>F.I.SH:</strong> Tinglovchi, F.I.SH, FIO, Ism, F.I.O ✅</li>
+                    <li><strong>Muassasa:</strong> Muassasa, Ta'lim muassasasi, Tashkilot</li>
+                    <li><strong>Ish joyi:</strong> Asosiy ish joyi, Ish joyi, Lavozimi</li>
+                    <li><strong>Kurs:</strong> Kursi, Kurs, Yo'nalishi</li>
+                    <li><strong>Raqam:</strong> Raqami, Raqam, №</li>
+                    <li><strong>Seriya:</strong> Seriyasi, Seriya</li>
+                    <li><strong>Reyting:</strong> Reyting, Baho, Ball</li>
+                    <li><strong>Muddat:</strong> O'qish muddati, Muddat, Davri</li>
+                </ul>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #6366f1;">
+                <h5 style="color: #6366f1; margin-top: 0;">⚙️ Avtomatik moslashtirish:</h5>
+                <ul style="font-size: 13px; color: #4b5563; line-height: 1.8;">
+                    <li>✅ Ustun nomlari <strong>katta-kichik harf</strong> farq qilmaydi</li>
+                    <li>✅ <strong>Qisman mos</strong> kelsa ham taniladi</li>
+                    <li>✅ Raqam yo'q bo'lsa - <strong>avtomatik</strong> beriladi</li>
+                    <li>✅ Seriya yo'q bo'lsa - <strong>MO/QT</strong> qo'yiladi</li>
+                    <li>⚠️ Faqat <strong>ism</strong> bo'lgan qatorlar saqlanadi</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 25px; padding: 20px; background: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin: 0 0 10px 0;">💡 Namuna Excel fayl strukturasi:</h4>
+        <div style="overflow-x: auto;">
+            <table style="border-collapse: collapse; width: 100%; font-size: 12px; background: white; border-radius: 6px;">
+                <thead>
+                    <tr style="background: #fef3c7;">
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">F.I.SH</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Ish joyi</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Kurs</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Raqami</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Aliyev Ali Valiyevich</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">15-maktab</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Informatika</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">000831</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size: 12px; color: #92400e; margin-top: 10px;">Import tugagach qaysi ustunlar topilgani ko'rsatiladi</p>
+    </div>
+</div>
+
+<style>
+    button:hover, a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    input[type="file"] {
+        border: none;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

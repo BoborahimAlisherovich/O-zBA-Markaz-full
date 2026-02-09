@@ -1,0 +1,169 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div style="padding: 20px; max-width: 900px;">
+    <h1 style="color: #333; margin-bottom: 30px;">📥 {{ title }}</h1>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+        <h3 style="margin-top: 0;">📋 Muhim ko'rsatmalar:</h3>
+        <ul style="margin-bottom: 0;">
+            <li>Excel fayl <strong>.xlsx</strong> yoki <strong>.xls</strong> formatida bo'lishi kerak</li>
+            <li><strong>Birinchi qator</strong> - ustun nomlari (sarlavhalar) bo'lishi kerak</li>
+            <li>Har bir qator <strong>alohida sertifikat</strong> sifatida saqlanadi</li>
+            <li>Mavjud yozuvlar (seriya + raqam bo'yicha) <strong>avtomatik yangilanadi</strong></li>
+            <li><strong>"Egasi"</strong> va <strong>"Raqam"</strong> ustunlari majburiy!</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; 
+            background: {% if message.tags == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; 
+            color: {% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %}; 
+            border: 1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#6ee7b7{% endif %};">
+            {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" style="background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">Sertifikat turi:</label>
+            <select name="certificate_type" style="width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 16px; background: #f9fafb;">
+                <option value="course_completion">📜 Kurs yakunlash sertifikati</option>
+                <option value="achievement">🏆 Yutuq sertifikati</option>
+                <option value="participation">🎯 Ishtirok sertifikati</option>
+                <option value="other">📋 Boshqa</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">Excel fayl:</label>
+            <div style="border: 2px dashed #d1d5db; border-radius: 10px; padding: 30px; text-align: center; background: #f9fafb;">
+                {{ form.excel_file }}
+                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">📁 .xlsx yoki .xls formatida fayl tanlang</p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 35px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
+                📥 Import qilish
+            </button>
+            
+            <a href="{% url 'admin:certificate_download_template' %}" 
+               style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                📄 Namuna yuklash
+            </a>
+            
+            <a href="{% url 'admin:certificate_export_excel' %}" 
+               style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                📤 Barchasini Export
+            </a>
+            
+            <a href=".." style="background: #6b7280; color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                ← Orqaga
+            </a>
+        </div>
+    </form>
+
+    <div style="margin-top: 35px; background: #f3f4f6; padding: 25px; border-radius: 12px;">
+        <h4 style="color: #374151; margin-top: 0;">📊 Excel fayl ustunlari:</h4>
+        
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+            <thead>
+                <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <th style="padding: 12px 15px; text-align: left;">Ustun nomi</th>
+                    <th style="padding: 12px 15px; text-align: left;">Tavsif</th>
+                    <th style="padding: 12px 15px; text-align: center;">Majburiy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Sertifikat nomi</td>
+                    <td style="padding: 12px 15px;">Sertifikat sarlavhasi</td>
+                    <td style="padding: 12px 15px; text-align: center;">❌</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Egasi</td>
+                    <td style="padding: 12px 15px;">Sertifikat egasining F.I.SH</td>
+                    <td style="padding: 12px 15px; text-align: center;">✅</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Ish joyi</td>
+                    <td style="padding: 12px 15px;">Egasining ish joyi</td>
+                    <td style="padding: 12px 15px; text-align: center;">❌</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Seriya</td>
+                    <td style="padding: 12px 15px;">Sertifikat seriyasi (masalan: SN)</td>
+                    <td style="padding: 12px 15px; text-align: center;">❌</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Raqam</td>
+                    <td style="padding: 12px 15px;">Sertifikat raqami</td>
+                    <td style="padding: 12px 15px; text-align: center;">✅</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <td style="padding: 12px 15px; font-weight: 600;">Kim tomonidan</td>
+                    <td style="padding: 12px 15px;">Sertifikatni bergan tashkilot</td>
+                    <td style="padding: 12px 15px; text-align: center;">❌</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; font-weight: 600;">Tavsif</td>
+                    <td style="padding: 12px 15px;">Qo'shimcha ma'lumot</td>
+                    <td style="padding: 12px 15px; text-align: center;">❌</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 25px; padding: 20px; background: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin: 0 0 10px 0;">💡 Namuna Excel fayl strukturasi:</h4>
+        <div style="overflow-x: auto;">
+            <table style="border-collapse: collapse; width: 100%; font-size: 13px; background: white; border-radius: 6px;">
+                <thead>
+                    <tr style="background: #fef3c7;">
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Sertifikat nomi</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Egasi</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Ish joyi</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Seriya</th>
+                        <th style="border: 1px solid #fcd34d; padding: 8px;">Raqam</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">IT kursi</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Aliyev Ali</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Maktab #15</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">SN</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">000001</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Pedagogika</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Karimova Kamola</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">Maktab #22</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">SN</td>
+                        <td style="border: 1px solid #fcd34d; padding: 8px;">000002</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    button:hover, a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    input[type="file"] {
+        border: none;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

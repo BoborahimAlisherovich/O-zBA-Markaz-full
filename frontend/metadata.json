@@ -1,0 +1,7 @@
+{
+  "name": "SAYT",
+  "description": "O'zbekiston Badiiy akademiyasi huzuridagi Badiiy ta'lim yo'nalishlarida pedagog va mutaxassis kadrlarni qayta tayyorlash hamda ularning malakasini oshirish markazining rasmiy web sayti",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

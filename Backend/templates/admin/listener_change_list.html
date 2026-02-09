@@ -1,0 +1,41 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+<li>
+    <a href="{% url 'admin:listener_import_excel' %}" class="addlink" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; padding: 8px 16px;">
+        📥 Excel Import
+    </a>
+</li>
+<li>
+    <a href="{% url 'admin:listener_export_excel' %}" class="addlink" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 8px; padding: 8px 16px;">
+        📤 Excel Export
+    </a>
+</li>
+<li>
+    <a href="{% url 'admin:listener_download_template' %}?record_type=certificate" class="addlink" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 8px; padding: 8px 16px;">
+        📄 MO Namuna
+    </a>
+</li>
+<li>
+    <a href="{% url 'admin:listener_download_template' %}?record_type=diploma" class="addlink" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 8px; padding: 8px 16px;">
+        📄 QT Namuna
+    </a>
+</li>
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<style>
+    .object-tools a {
+        margin-right: 8px !important;
+        font-weight: 600 !important;
+        transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+    .object-tools a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+</style>
+{{ block.super }}
+{% endblock %}
