@@ -31,8 +31,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center p-1">
-              <img src="https://uz.wikipedia.org/wiki/O%CA%BBzbekiston_Badiiy_akademiyasi_huzuridagi_Malaka_oshirish_markazi#/media/Fayl:Logo_uzbamarkaz.png" alt="Logo" className="w-full h-auto filter brightness-0 invert" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden">
+              <img src="/logo/uzba_markaz.png" alt="O'zBA Malaka oshirish markazi logosi" className="w-full h-full object-contain" />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-sm font-bold leading-tight text-blue-900">
