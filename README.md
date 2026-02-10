@@ -185,3 +185,4 @@ O'zbekiston Badiiy akademiyasi huzuridagi Badiiy ta'lim markazi
 ---
 
 **Eslatma:** Ishlab chiqish uchun har ikkala serverni (backend va frontend) bir vaqtda ishga tushiring.
+=======
