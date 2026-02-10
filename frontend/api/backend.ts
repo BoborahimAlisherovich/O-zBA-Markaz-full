@@ -13,7 +13,7 @@ interface AppContent {
 import { INITIAL_STATS } from '../constants';
 
 // API Base URL - Change this for production
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://uzbamalaka.uz/api';
 
 // Token storage keys
 const TOKEN_KEY = 'auth_token';
