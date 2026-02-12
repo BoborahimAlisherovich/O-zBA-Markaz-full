@@ -6,7 +6,9 @@ from rest_framework import serializers
 from .models import (
     News, NewsImage, GalleryItem, GalleryImage, Listener, Teacher, Personnel,
     Course, JournalIssue, Document, Statistics, YearlyStatistics,
-    AppContent, JournalSettings
+    AppContent, JournalSettings, InternationalRelation, ForeignPartner,
+    CollaborationProject, InternationalPhoto, InternationalVideo,
+    ArtGalleryItem, ArtGalleryImage
 )
 
 
@@ -121,10 +123,19 @@ class ListenerSerializer(serializers.ModelSerializer):
 class ListenerBulkImportSerializer(serializers.Serializer):
     """Serializer for bulk importing listeners from Excel."""
     file = serializers.FileField()
-    record_type = serializers.ChoiceField(choices=[
-        ('MO', 'Malaka oshirish (MO)'),
-        ('QT', 'Qayta tayyorlash (QT)'),
-    ])
+    record_type = serializers.CharField()
+
+    def validate_record_type(self, value):
+        normalized = str(value).strip().upper()
+        mapping = {
+            'MO': 'MO',
+            'QT': 'QT',
+            'CERTIFICATE': 'MO',
+            'DIPLOMA': 'QT',
+        }
+        if normalized not in mapping:
+            raise serializers.ValidationError("record_type MO yoki QT bo'lishi kerak.")
+        return mapping[normalized]
 
 
 class TeacherSerializer(serializers.ModelSerializer):
@@ -260,6 +271,130 @@ class YearlyStatisticsSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
+class InternationalPhotoSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternationalPhoto
+        fields = ['id', 'image', 'image_url', 'order', 'is_active']
+        read_only_fields = ['id']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+
+class InternationalVideoSerializer(serializers.ModelSerializer):
+    embed_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternationalVideo
+        fields = ['id', 'title', 'video_url', 'embed_url', 'order', 'is_active']
+        read_only_fields = ['id']
+
+    def get_embed_url(self, obj):
+        url = (obj.video_url or '').strip()
+        if not url:
+            return ''
+        if 'youtube.com/watch?v=' in url:
+            return url.replace('watch?v=', 'embed/')
+        if 'youtu.be/' in url:
+            return url.replace('youtu.be/', 'www.youtube.com/embed/')
+        return url
+
+
+class InternationalRelationSerializer(serializers.ModelSerializer):
+    photos = serializers.SerializerMethodField()
+    videos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternationalRelation
+        fields = ['id', 'title', 'description', 'photos', 'videos', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_photos(self, obj):
+        queryset = obj.photos.filter(is_active=True).order_by('order', '-created_at')
+        return InternationalPhotoSerializer(queryset, many=True, context=self.context).data
+
+    def get_videos(self, obj):
+        queryset = obj.videos.filter(is_active=True).order_by('order', '-created_at')
+        return InternationalVideoSerializer(queryset, many=True, context=self.context).data
+
+
+class ForeignPartnerSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ForeignPartner
+        fields = [
+            'id', 'organization_name', 'country', 'short_info',
+            'image', 'image_url', 'order', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+
+class CollaborationProjectSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = CollaborationProject
+        fields = [
+            'id', 'name', 'description', 'date', 'status', 'status_display',
+            'order', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ArtGalleryImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ArtGalleryImage
+        fields = ['id', 'image', 'image_url', 'order']
+        read_only_fields = ['id']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+
+class ArtGalleryItemSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    images = ArtGalleryImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ArtGalleryItem
+        fields = [
+            'id', 'image', 'image_url', 'name', 'author_full_name',
+            'text', 'images', 'order', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+
 class StatisticsSerializer(serializers.ModelSerializer):
     """Serializer for Statistics model."""
     yearly_data = serializers.SerializerMethodField()
@@ -288,6 +423,10 @@ class AllDataSerializer(serializers.Serializer):
     journal_issues = JournalIssueSerializer(many=True, read_only=True)
     documents = DocumentSerializer(many=True, read_only=True)
     statistics = StatisticsSerializer(read_only=True)
+    international = InternationalRelationSerializer(read_only=True)
+    foreign_partners = ForeignPartnerSerializer(many=True, read_only=True)
+    collaboration_projects = CollaborationProjectSerializer(many=True, read_only=True)
+    art_gallery = ArtGalleryItemSerializer(many=True, read_only=True)
 
 
 class AppContentSerializer(serializers.ModelSerializer):

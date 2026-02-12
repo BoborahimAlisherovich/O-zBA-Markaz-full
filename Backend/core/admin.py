@@ -17,7 +17,9 @@ from django.http import HttpResponse
 from .models import (
     News, NewsImage, GalleryItem, GalleryImage, Listener, Teacher, Personnel,
     Course, JournalIssue, Document, Statistics, YearlyStatistics,
-    AppContent, JournalSettings
+    AppContent, JournalSettings, InternationalRelation, ForeignPartner,
+    CollaborationProject, InternationalPhoto, InternationalVideo,
+    ArtGalleryItem, ArtGalleryImage
 )
 
 
@@ -93,11 +95,32 @@ class GalleryImageInline(admin.TabularInline):
     ordering = ['order']
 
 
+class InternationalPhotoInline(admin.TabularInline):
+    model = InternationalPhoto
+    extra = 3
+    fields = ['image', 'order', 'is_active']
+    ordering = ['order']
+
+
+class InternationalVideoInline(admin.TabularInline):
+    model = InternationalVideo
+    extra = 2
+    fields = ['title', 'video_url', 'order', 'is_active']
+    ordering = ['order']
+
+
+class ArtGalleryImageInline(admin.TabularInline):
+    model = ArtGalleryImage
+    extra = 3
+    fields = ['image', 'order']
+    ordering = ['order']
+
+
 @admin.register(GalleryItem)
 class GalleryItemAdmin(admin.ModelAdmin):
     """Admin configuration for GalleryItem model - album with multiple images."""
     list_display = ['__str__', 'title', 'order', 'is_active', 'image_count', 'created_at']
-    list_filter = ['is_active']
+    list_filter = ['is_active'] 
     list_editable = ['order', 'is_active']
     ordering = ['order', '-created_at']
     inlines = [GalleryImageInline]
@@ -174,7 +197,14 @@ class ListenerAdmin(admin.ModelAdmin):
             form = ExcelImportForm(request.POST, request.FILES)
             if form.is_valid():
                 excel_file = request.FILES['excel_file']
-                record_type = request.POST.get('record_type', 'MO')
+                raw_type = request.POST.get('record_type', 'MO')
+                mapping = {
+                    'MO': 'MO',
+                    'QT': 'QT',
+                    'CERTIFICATE': 'MO',
+                    'DIPLOMA': 'QT',
+                }
+                record_type = mapping.get(str(raw_type).strip().upper(), 'MO')
 
                 try:
                     # Read all columns as strings to preserve leading zeros
@@ -483,6 +513,80 @@ class AppContentAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(InternationalRelation)
+class InternationalRelationAdmin(admin.ModelAdmin):
+    """Admin configuration for InternationalRelation singleton model."""
+    list_display = ['title', 'updated_at']
+    inlines = [InternationalPhotoInline, InternationalVideoInline]
+
+    fieldsets = (
+        ("Xalqaro aloqalar to'g'risida", {
+            'fields': ('title', 'description')
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return not InternationalRelation.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(ForeignPartner)
+class ForeignPartnerAdmin(admin.ModelAdmin):
+    list_display = ['organization_name', 'country', 'order', 'is_active']
+    list_filter = ['country', 'is_active']
+    search_fields = ['organization_name', 'country', 'short_info']
+    list_editable = ['order', 'is_active']
+    ordering = ['order', 'organization_name']
+
+    fieldsets = (
+        ("Xorijiy hamkor", {
+            'fields': ('organization_name', 'country', 'short_info', 'image')
+        }),
+        ('Sozlamalar', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+
+@admin.register(CollaborationProject)
+class CollaborationProjectAdmin(admin.ModelAdmin):
+    list_display = ['name', 'date', 'status', 'order', 'is_active']
+    list_filter = ['status', 'is_active']
+    search_fields = ['name', 'description']
+    list_editable = ['status', 'order', 'is_active']
+    ordering = ['-date', 'order']
+
+    fieldsets = (
+        ('Loyiha ma\'lumotlari', {
+            'fields': ('name', 'description', 'date', 'status')
+        }),
+        ('Sozlamalar', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+
+@admin.register(ArtGalleryItem)
+class ArtGalleryItemAdmin(admin.ModelAdmin):
+    list_display = ['name', 'author_full_name', 'order', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['name', 'author_full_name', 'text']
+    list_editable = ['order', 'is_active']
+    ordering = ['order', '-created_at']
+    inlines = [ArtGalleryImageInline]
+
+    fieldsets = (
+        ('Asosiy ma\'lumotlar', {
+            'fields': ('image', 'name', 'author_full_name', 'text')
+        }),
+        ('Sozlamalar', {
+            'fields': ('order', 'is_active')
+        }),
+    )
 
 
 @admin.register(JournalSettings)

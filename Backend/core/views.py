@@ -10,19 +10,23 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import (
     News, NewsImage, GalleryItem, Listener, Teacher, Personnel,
     Course, JournalIssue, Document, Statistics, YearlyStatistics,
-    AppContent, JournalSettings
+    AppContent, JournalSettings, InternationalRelation, ForeignPartner,
+    CollaborationProject, ArtGalleryItem
 )
 from .serializers import (
     NewsSerializer, NewsCreateSerializer, NewsImageSerializer,
     GalleryItemSerializer, ListenerSerializer, ListenerBulkImportSerializer,
     TeacherSerializer, PersonnelSerializer, CourseSerializer,
     JournalIssueSerializer, DocumentSerializer, StatisticsSerializer,
-    YearlyStatisticsSerializer, AppContentSerializer, JournalSettingsSerializer
+    YearlyStatisticsSerializer, AppContentSerializer, JournalSettingsSerializer,
+    InternationalRelationSerializer, ForeignPartnerSerializer,
+    CollaborationProjectSerializer, ArtGalleryItemSerializer
 )
 
 
@@ -37,6 +41,12 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if settings.DEBUG:
             return True
         return request.user and request.user.is_staff
+
+
+class TwelveItemsPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 50
 
 
 class NewsViewSet(viewsets.ModelViewSet):
@@ -151,10 +161,21 @@ class ListenerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    @staticmethod
+    def normalize_record_type(value):
+        normalized = str(value or '').strip().upper()
+        mapping = {
+            'MO': 'MO',
+            'QT': 'QT',
+            'CERTIFICATE': 'MO',
+            'DIPLOMA': 'QT',
+        }
+        return mapping.get(normalized)
+
     def get_queryset(self):
         queryset = Listener.objects.all()
-        record_type = self.request.query_params.get('record_type', None)
-        if record_type in ['MO', 'QT']:
+        record_type = self.normalize_record_type(self.request.query_params.get('record_type', None))
+        if record_type:
             queryset = queryset.filter(record_type=record_type)
 
         search = self.request.query_params.get('search', None)
@@ -185,9 +206,7 @@ class ListenerViewSet(viewsets.ModelViewSet):
         listener = None
         
         # Convert series to valid record_type
-        record_type = None
-        if series in ['MO', 'QT']:
-            record_type = series
+        record_type = self.normalize_record_type(series)
         
         if record_type:
             # Search by exact record_type and number
@@ -232,7 +251,7 @@ class ListenerViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         file = serializer.validated_data['file']
-        record_type = serializer.validated_data['record_type']
+        record_type = self.normalize_record_type(serializer.validated_data['record_type']) or 'MO'
 
         try:
             # Read all columns as strings to preserve leading zeros
@@ -450,6 +469,71 @@ class JournalSettingsViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class InternationalRelationViewSet(viewsets.ViewSet):
+    """ViewSet for InternationalRelation (singleton model)."""
+    permission_classes = [IsAdminOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def list(self, request):
+        content = InternationalRelation.get_instance()
+        serializer = InternationalRelationSerializer(content, context={'request': request})
+        return Response(serializer.data)
+
+    def create(self, request):
+        content = InternationalRelation.get_instance()
+        serializer = InternationalRelationSerializer(content, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ForeignPartnerViewSet(viewsets.ModelViewSet):
+    """ViewSet for foreign partners."""
+    queryset = ForeignPartner.objects.filter(is_active=True).order_by('order', 'organization_name')
+    serializer_class = ForeignPartnerSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    pagination_class = TwelveItemsPagination
+
+    def get_queryset(self):
+        from django.conf import settings
+        queryset = ForeignPartner.objects.all().order_by('order', 'organization_name')
+        if not (self.request.user.is_staff or settings.DEBUG):
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+
+class CollaborationProjectViewSet(viewsets.ModelViewSet):
+    """ViewSet for collaboration projects."""
+    queryset = CollaborationProject.objects.filter(is_active=True).order_by('-date', 'order')
+    serializer_class = CollaborationProjectSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        from django.conf import settings
+        queryset = CollaborationProject.objects.all().order_by('-date', 'order')
+        if not (self.request.user.is_staff or settings.DEBUG):
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+
+class ArtGalleryItemViewSet(viewsets.ModelViewSet):
+    """ViewSet for Art gallery items."""
+    queryset = ArtGalleryItem.objects.filter(is_active=True).order_by('order', '-created_at')
+    serializer_class = ArtGalleryItemSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        from django.conf import settings
+        queryset = ArtGalleryItem.objects.all().order_by('order', '-created_at')
+        if not (self.request.user.is_staff or settings.DEBUG):
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def get_all_data(request):
@@ -508,6 +592,25 @@ def get_all_data(request):
         ).data,
         'journalSettings': JournalSettingsSerializer(
             JournalSettings.get_instance(),
+            context={'request': request}
+        ).data,
+        'international': InternationalRelationSerializer(
+            InternationalRelation.get_instance(),
+            context={'request': request}
+        ).data,
+        'foreignPartners': ForeignPartnerSerializer(
+            ForeignPartner.objects.filter(is_active=True).order_by('order', 'organization_name'),
+            many=True,
+            context={'request': request}
+        ).data,
+        'collaborationProjects': CollaborationProjectSerializer(
+            CollaborationProject.objects.filter(is_active=True).order_by('-date', 'order'),
+            many=True,
+            context={'request': request}
+        ).data,
+        'artGallery': ArtGalleryItemSerializer(
+            ArtGalleryItem.objects.filter(is_active=True).order_by('order', '-created_at'),
+            many=True,
             context={'request': request}
         ).data,
     }

@@ -282,7 +282,7 @@ const NewsDetail: React.FC = () => {
                   >
                     <div className="h-40 overflow-hidden">
                       <img 
-                        src={item.image || item.images?.[0] || 'https://via.placeholder.com/400x200?text=Rasm+yo\'q'} 
+                        src={item.image || item.images?.[0]?.imageUrl || 'https://via.placeholder.com/400x200?text=Rasm+yo\'q'} 
                         alt={item.title} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                       />

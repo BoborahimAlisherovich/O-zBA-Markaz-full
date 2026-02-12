@@ -1,7 +1,11 @@
 
 /* Corrected: Fixed malformed import and removed redundant interface definitions to resolve conflicts and syntax errors */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { NewsItem, Personnel, JournalIssue, Document, PDPlanRecord, Statistics, AppContent, GalleryItem, Teacher, Course } from '../types';
+import {
+  NewsItem, Personnel, JournalIssue, Document, PDPlanRecord, Statistics,
+  AppContent, GalleryItem, Teacher, Course, InternationalContent, ForeignPartner,
+  CollaborationProject, ArtGalleryItem
+} from '../types';
 import { BackendAPI } from '../api/backend';
 import { INITIAL_STATS } from '../constants';
 
@@ -17,6 +21,10 @@ interface AppState {
   stats: Statistics;
   aboutContent: AppContent;
   studentNotes: string;
+  internationalContent: InternationalContent;
+  foreignPartners: ForeignPartner[];
+  collaborationProjects: CollaborationProject[];
+  artGallery: ArtGalleryItem[];
   loading: boolean;
   refreshData: () => Promise<void>;
   updateNews: (n: NewsItem[]) => Promise<void>;
@@ -46,6 +54,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [stats, setStats] = useState<Statistics | null>(null);
   const [studentNotes, setStudentNotes] = useState("");
   const [aboutContent, setAboutContent] = useState<AppContent>({ history: "", structure: "" });
+  const [internationalContent, setInternationalContent] = useState<InternationalContent>({
+    title: "Xalqaro aloqalar to'g'risida",
+    description: '',
+    photos: [],
+    videos: [],
+  });
+  const [foreignPartners, setForeignPartners] = useState<ForeignPartner[]>([]);
+  const [collaborationProjects, setCollaborationProjects] = useState<CollaborationProject[]>([]);
+  const [artGallery, setArtGallery] = useState<ArtGalleryItem[]>([]);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
@@ -64,6 +81,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setJournalIssues(data.journalIssues);
       setStudentNotes(data.notes);
       setAboutContent(data.about);
+      setInternationalContent(data.internationalContent);
+      setForeignPartners(data.foreignPartners);
+      setCollaborationProjects(data.collaborationProjects);
+      setArtGallery(data.artGallery);
     } catch (error) {
       console.error("Ma'lumotlarni yuklashda xatolik:", error);
     } finally {
@@ -139,7 +160,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      news, gallery, teachers, courses, personnel, journalIssues, documents, pdPlans, stats: stats || INITIAL_STATS, aboutContent, studentNotes, loading,
+      news, gallery, teachers, courses, personnel, journalIssues, documents, pdPlans, stats: stats || INITIAL_STATS,
+      aboutContent, studentNotes, internationalContent, foreignPartners, collaborationProjects, artGallery, loading,
       refreshData, updateNews, updateGallery, updateTeachers, updateCourses, updatePersonnel, updateStats, updateDocs, updatePlans, updateJournalIssues, updateContent
     }}>
       {children}

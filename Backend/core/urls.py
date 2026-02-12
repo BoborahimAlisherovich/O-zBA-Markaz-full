@@ -21,6 +21,10 @@ router.register(r'statistics', views.StatisticsViewSet, basename='statistics')
 router.register(r'yearly-statistics', views.YearlyStatisticsViewSet, basename='yearly-statistics')
 router.register(r'content', views.AppContentViewSet, basename='content')
 router.register(r'journal-settings', views.JournalSettingsViewSet, basename='journal-settings')
+router.register(r'international-content', views.InternationalRelationViewSet, basename='international-content')
+router.register(r'foreign-partners', views.ForeignPartnerViewSet, basename='foreign-partners')
+router.register(r'collaboration-projects', views.CollaborationProjectViewSet, basename='collaboration-projects')
+router.register(r'art-gallery', views.ArtGalleryItemViewSet, basename='art-gallery')
 
 urlpatterns = [
     # Router URLs

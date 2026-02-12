@@ -1,0 +1,67 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About Us",
+    "journal": "Scientific Journal",
+    "international": "International Relations",
+    "students": "For Students",
+    "openData": "Open Data",
+    "remoteEducation": "Remote Education",
+    "details": "Details",
+    "contact": "Contact",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "noData": "No data available"
+  },
+  "header": {
+    "title": "Center for Teacher Retraining and Professional Development in the Field of Art Education under the Uzbek Academy of Arts",
+    "language": "Language"
+  },
+  "footer": {
+    "about": "About",
+    "aboutText": "Center for teacher retraining and professional development in the field of art education.",
+    "contact": "Contact",
+    "address": "Tashkent, Chilonzor District, 26-Quarter, Shirin Street, 1A",
+    "phone": "(+99877) 363-38-36",
+    "email": "uzbahuzuridagimarkaz@gmail.com",
+    "usefulLinks": "Useful Links",
+    "copyright": "All rights reserved"
+  },
+  "home": {
+    "hero": "The Future of Art Education with Us",
+    "heroSubtitle": "We prepare professional educators at our retraining and professional development center",
+    "stats": {
+      "professors": "Professors",
+      "dotsents": "Associate Professors",
+      "academics": "Academicians",
+      "potential": "Scientific Potential"
+    },
+    "latestNews": "Latest News",
+    "teachers": "Our Teachers",
+    "courses": "Our Programs",
+    "gallery": "Photo Gallery",
+    "artGallery": "Art Gallery",
+    "usefulLinks": "Useful Links"
+  },
+  "news": {
+    "important": "Important",
+    "noNews": "No news available"
+  },
+  "gallery": {
+    "viewMore": "View",
+    "noGallery": "Media files not available"
+  },
+  "international": {
+    "title": "International Relations",
+    "about": "About International Relations",
+    "partners": "Partners",
+    "foreignPartners": "Foreign Partners",
+    "projects": "Projects",
+    "collaborationProjects": "Collaboration Projects",
+    "photos": "Photos",
+    "videos": "Video Library",
+    "ongoing": "Ongoing",
+    "completed": "Completed"
+  }
+}

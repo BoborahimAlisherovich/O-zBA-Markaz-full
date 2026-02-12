@@ -4,11 +4,13 @@ import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { Layout } from './components/Layout';
+import './i18n'; // Initialize i18n
 
 // Lazy load pages for better performance
 const Home = React.lazy(() => import('./pages/Home'));
 const About = React.lazy(() => import('./pages/About'));
 const Journal = React.lazy(() => import('./pages/Journal'));
+const International = React.lazy(() => import('./pages/International'));
 const Students = React.lazy(() => import('./pages/Students'));
 const OpenData = React.lazy(() => import('./pages/OpenData'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -27,6 +29,7 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/journal" element={<Journal />} />
+              <Route path="/international" element={<International />} />
               <Route path="/students" element={<Students />} />
               <Route path="/open-data" element={<OpenData />} />
               <Route path="/news/:id" element={<NewsDetail />} />

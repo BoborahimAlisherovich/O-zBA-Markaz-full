@@ -3,17 +3,30 @@
  * Connects to Django REST Framework backend
  */
 import { NewsItem, Personnel, JournalIssue, Document, PDPlanRecord, Statistics, GalleryItem, GalleryImage, Teacher, Course } from '../types';
-
-// Local AppContent type (not exported from types since it's backend-specific)
-interface AppContent {
-  history: string;
-  structure: string;
-  structureImage: string;
-}
+import {
+  AppContent, InternationalContent, ForeignPartner,
+  CollaborationProject, ArtGalleryItem
+} from '../types';
 import { INITIAL_STATS } from '../constants';
 
-// API Base URL - Change this for production
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://uzbamalaka.uz/api';
+function resolveApiBaseUrl() {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  if (envUrl) return envUrl.replace(/\/+$/, '');
+
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname, port, origin } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      if (port === '5173' || port === '3000') {
+        return `${protocol}//${hostname}:8000/api`;
+      }
+      return `${origin}/api`;
+    }
+    return `${origin}/api`;
+  }
+  return 'https://uzbamalaka.uz/api';
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 // Token storage keys
 const TOKEN_KEY = 'auth_token';
@@ -204,6 +217,64 @@ function transformAppContent(data: any): AppContent {
   };
 }
 
+function transformInternationalContent(data: any): InternationalContent {
+  return {
+    title: data?.title || "Xalqaro aloqalar to'g'risida",
+    description: data?.description || '',
+    photos: (data?.photos || []).map((item: any) => ({
+      id: String(item.id),
+      imageUrl: item.image_url || '',
+      order: item.order || 0,
+    })),
+    videos: (data?.videos || []).map((item: any) => ({
+      id: String(item.id),
+      title: item.title || '',
+      videoUrl: item.video_url || '',
+      embedUrl: item.embed_url || item.video_url || '',
+      order: item.order || 0,
+    })),
+  };
+}
+
+function transformForeignPartner(item: any): ForeignPartner {
+  return {
+    id: String(item.id),
+    organizationName: item.organization_name,
+    country: item.country,
+    shortInfo: item.short_info,
+    imageUrl: item.image_url || '',
+    order: item.order || 0,
+  };
+}
+
+function transformCollaborationProject(item: any): CollaborationProject {
+  return {
+    id: String(item.id),
+    name: item.name,
+    description: item.description,
+    date: item.date,
+    status: item.status,
+    statusDisplay: item.status_display || '',
+    order: item.order || 0,
+  };
+}
+
+function transformArtGalleryItem(item: any): ArtGalleryItem {
+  return {
+    id: String(item.id),
+    imageUrl: item.image_url || '',
+    name: item.name,
+    authorFullName: item.author_full_name,
+    text: item.text,
+    images: (item.images || []).map((img: any) => ({
+      id: String(img.id),
+      imageUrl: img.image_url || '',
+      order: img.order || 0,
+    })),
+    order: item.order || 0,
+  };
+}
+
 export const BackendAPI = {
   /**
    * Get all data for initial load - try API first, fallback to localStorage
@@ -225,6 +296,10 @@ export const BackendAPI = {
         journalIssues: (data.journalIssues || []).map(transformJournalIssue),
         about: transformAppContent(data.about),
         notes: data.about?.student_notes || "Tinglovchilar uchun eslatma matni...",
+        internationalContent: transformInternationalContent(data.international),
+        foreignPartners: (data.foreignPartners || []).map(transformForeignPartner),
+        collaborationProjects: (data.collaborationProjects || []).map(transformCollaborationProject),
+        artGallery: (data.artGallery || []).map(transformArtGalleryItem),
       };
     } catch (error) {
       console.warn('API error, using localStorage fallback:', error);
@@ -242,6 +317,10 @@ export const BackendAPI = {
         journalIssues: JSON.parse(localStorage.getItem('bt_journal') || '[]') as JournalIssue[],
         about: JSON.parse(localStorage.getItem('bt_about') || '{"history": "", "structure": "", "structureImage": ""}') as AppContent,
         notes: localStorage.getItem('bt_notes') || "Tinglovchilar uchun eslatma matni...",
+        internationalContent: JSON.parse(localStorage.getItem('bt_international_content') || "{\"title\":\"Xalqaro aloqalar to'g'risida\",\"description\":\"\",\"photos\":[],\"videos\":[]}") as InternationalContent,
+        foreignPartners: JSON.parse(localStorage.getItem('bt_foreign_partners') || '[]') as ForeignPartner[],
+        collaborationProjects: JSON.parse(localStorage.getItem('bt_collaboration_projects') || '[]') as CollaborationProject[],
+        artGallery: JSON.parse(localStorage.getItem('bt_art_gallery') || '[]') as ArtGalleryItem[],
       };
     }
   },
@@ -406,7 +485,7 @@ export const BackendAPI = {
   async bulkImportListeners(file: File, recordType: 'certificate' | 'diploma') {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('record_type', recordType);
+    formData.append('record_type', recordType === 'diploma' ? 'QT' : 'MO');
     return apiRequest<any>('/listeners/bulk_import/', {
       method: 'POST',
       body: formData,

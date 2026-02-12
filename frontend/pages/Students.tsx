@@ -65,7 +65,7 @@ const Students: React.FC = () => {
                 placeholder="F.I.SH yoki ish joyini kiriting..." 
                 className="flex-grow border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                
               />
               <button type="submit" className="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-800 transition-colors">
                 Qidirish

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   PieChart, Pie, Cell, 
@@ -7,6 +7,7 @@ import {
 import { ChevronRight, ChevronLeft, Award, Users, GraduationCap, TrendingUp, Zap, Image as ImageIcon, BookOpen, Layers, ShieldCheck, CheckCircle2, XCircle, Globe, Palette, Gavel, X, FileText, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PDPlanRecord, GalleryItem } from '../types';
+import ArtGallerySection from '../components/ArtGallerySection';
 
 // Animation hook for scroll reveal
 const useScrollReveal = () => {
@@ -31,18 +32,24 @@ const useScrollReveal = () => {
 };
 
 const Home: React.FC = () => {
-  const { news, stats, gallery, teachers, courses, pdPlans } = useApp();
+  const { news, stats, gallery, teachers, courses, pdPlans, artGallery } = useApp();
   
   // Reestr state
   const [activeReestrTab, setActiveReestrTab] = useState<'mo' | 'qt'>('mo');
   const [docNumber, setDocNumber] = useState('');
   const [searchResult, setSearchResult] = useState<{status: 'idle' | 'found' | 'not_found', data?: PDPlanRecord}>({status: 'idle'});
   
-  // News pagination
+  // News pagination state
   const [newsPage, setNewsPage] = useState(1);
-  const newsPerPage = 8;
-  const totalNewsPages = Math.ceil(news.length / newsPerPage);
-  const paginatedNews = news.slice((newsPage - 1) * newsPerPage, newsPage * newsPerPage);
+  const newsPageSize = 4;
+  
+  // Teachers carousel state
+  const [teachersCarouselIndex, setTeachersCarouselIndex] = useState(0);
+  const teachersCarouselSize = 4;
+  
+  // Gallery carousel state
+  const [galleryCarouselIndex, setGalleryCarouselIndex] = useState(0);
+  const galleryCarouselSize = 4;
   
   // Gallery modal state
   const [selectedGallery, setSelectedGallery] = useState<GalleryItem | null>(null);
@@ -51,8 +58,27 @@ const Home: React.FC = () => {
   
   // Course detail expansion
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
+  
+  // Teachers carousel effect
+  useEffect(() => {
+    if (teachers.length <= teachersCarouselSize) return;
+    const interval = setInterval(() => {
+      const maxIndex = teachers.length - teachersCarouselSize;
+      setTeachersCarouselIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [teachers.length]);
 
-  // Auto-slide effect for gallery
+  // Gallery carousel effect
+  useEffect(() => {
+    if (gallery.length <= galleryCarouselSize) return;
+    const interval = setInterval(() => {
+      setGalleryCarouselIndex((prev) => (prev + 1) % gallery.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [gallery.length]);
+
+  // Auto-slide effect for gallery modal
   useEffect(() => {
     if (!selectedGallery || !isAutoPlaying) return;
     const allImages = [{ imageUrl: selectedGallery.coverImageUrl, id: 'cover' }, ...selectedGallery.images];
@@ -64,6 +90,13 @@ const Home: React.FC = () => {
     
     return () => clearInterval(interval);
   }, [selectedGallery, isAutoPlaying]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(news.length / newsPageSize));
+    if (newsPage > totalPages) {
+      setNewsPage(1);
+    }
+  }, [news.length, newsPage, newsPageSize]);
 
   const openGalleryModal = useCallback((item: GalleryItem) => {
     setSelectedGallery(item);
@@ -107,6 +140,11 @@ const Home: React.FC = () => {
 
   const retrainingCourses = courses.filter(c => c.type === 'retraining');
   const pdCourses = courses.filter(c => c.type === 'professional_development');
+  const totalNewsPages = Math.max(1, Math.ceil(news.length / newsPageSize));
+  const paginatedNews = useMemo(() => {
+    const start = (newsPage - 1) * newsPageSize;
+    return news.slice(start, start + newsPageSize);
+  }, [news, newsPage, newsPageSize]);
 
   const handleReestrSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +199,7 @@ const Home: React.FC = () => {
   const teachersReveal = useScrollReveal();
   const coursesReveal = useScrollReveal();
   const galleryReveal = useScrollReveal();
+  const artGalleryReveal = useScrollReveal();
   const linksReveal = useScrollReveal();
 
   return (
@@ -184,11 +223,11 @@ const Home: React.FC = () => {
               <span className="text-xs font-semibold tracking-wide">Rasmiy veb-sahifa</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[1.1] tracking-tight">
-              Badiiy ta'limning <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">kelajagi</span> biz bilan
+              San'at orqali tafakkur, <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Ta'lim</span> orqali taraqqiyot!
             </h1>
             <p className="text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl font-light">
-              Malaka oshirish va qayta tayyorlash markazida professional pedagoglar tayyorlaymiz
+              Haqiqiy pedagog o‘quvchida ijodkorlikni tarbiyalaydi.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/about" className="group px-8 py-4 bg-white text-slate-900 hover:bg-blue-500 hover:text-white rounded-2xl font-bold transition-all duration-300 shadow-2xl shadow-white/20 flex items-center gap-3">
@@ -457,78 +496,74 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-      {/* News Section - 2 per row, with pagination */}
+      {/* News Section */}
       <section 
         ref={newsReveal.ref}
         className={`container mx-auto px-6 py-16 transition-all duration-1000 ${
           newsReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
       >
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Yangiliklar</span>
-            <h2 className="text-4xl font-black text-slate-900 mt-2">So'nggi yangiliklar</h2>
-          </div>
-          {totalNewsPages > 1 && (
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setNewsPage(p => Math.max(1, p - 1))}
-                disabled={newsPage === 1}
-                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <span className="px-4 py-2 text-sm font-bold text-slate-600">
-                {newsPage} / {totalNewsPages}
-              </span>
-              <button 
-                onClick={() => setNewsPage(p => Math.min(totalNewsPages, p + 1))}
-                disabled={newsPage === totalNewsPages}
-                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
+        <div className="mb-12">
+          <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Yangiliklar</span>
+          <h2 className="text-4xl font-black text-slate-900 mt-2">So'nggi yangiliklar</h2>
         </div>
         
-        {paginatedNews.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {paginatedNews.map((item, idx) => (
-              <Link 
-                to={`/news/${item.id}`} 
-                key={item.id} 
-                className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-100"
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <img 
-                    src={item.images?.[0]?.imageUrl || item.image || '/placeholder.jpg'} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                  {item.isImportant && (
-                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-red-500 text-white text-xs font-bold uppercase rounded-full flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                      Muhim
-                    </div>
-                  )}
-
-                </div>
-                <div className="p-6">
-                  <span className="text-sm font-medium text-slate-400">{item.date}</span>
-                  <h3 className="text-xl font-black text-slate-900 mt-2 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate-500 line-clamp-2 text-sm">{item.content}</p>
-                  <div className="flex items-center gap-2 mt-4 text-blue-600 font-bold text-sm group-hover:gap-3 transition-all">
-                    Batafsil <ChevronRight size={16} />
+        {news.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {paginatedNews.map((item) => (
+                <Link
+                  to={`/news/${item.id}`}
+                  key={item.id}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 border border-slate-100"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={item.images?.[0]?.imageUrl || item.image || '/placeholder.jpg'}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div className="p-4">
+                    <span className="text-xs font-medium text-slate-400">{item.date}</span>
+                    <h4 className="text-base font-black text-slate-900 mt-1 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {item.title}
+                    </h4>
+                    <p className="text-slate-500 line-clamp-2 text-xs">{item.content}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {totalNewsPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 disabled:opacity-40"
+                  onClick={() => setNewsPage((prev) => Math.max(1, prev - 1))}
+                  disabled={newsPage === 1}
+                >
+                  Oldingi
+                </button>
+                {Array.from({ length: totalNewsPages }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-10 h-10 rounded-xl font-bold ${newsPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-white border border-slate-300 text-slate-700'}`}
+                    onClick={() => setNewsPage(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 disabled:opacity-40"
+                  onClick={() => setNewsPage((prev) => Math.min(totalNewsPages, prev + 1))}
+                  disabled={newsPage === totalNewsPages}
+                >
+                  Keyingi
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="py-20 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
             <p className="text-slate-400 font-medium">Hozircha yangiliklar mavjud emas</p>
@@ -552,41 +587,66 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {teachers.length > 0 ? teachers.map((teacher, idx) => (
-              <div 
-                key={teacher.id} 
-                className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-                style={{ animationDelay: `${idx * 100}ms` }}
+          <div className="overflow-hidden">
+            {teachers.length > 0 ? (
+              <div
+                className="flex transition-transform duration-700 ease-in-out -mx-3"
+                style={{
+                  transform: teachers.length > teachersCarouselSize
+                    ? `translateX(-${teachersCarouselIndex * (100 / teachersCarouselSize)}%)`
+                    : 'translateX(0)',
+                }}
               >
+                {teachers.map((teacher) => (
+                  <div key={teacher.id} className="w-full sm:w-1/2 lg:w-1/4 shrink-0 px-3">
+                    <div className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                 {/* Square Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  <img 
-                    src={teacher.photoUrl || 'https://via.placeholder.com/400x400?text=Ustoz'} 
-                    alt={teacher.fullName} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
+                      <div className="relative aspect-square overflow-hidden">
+                        <img
+                          src={teacher.photoUrl || 'https://via.placeholder.com/400x400?text=Ustoz'}
+                          alt={teacher.fullName}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
                 
                 {/* Info */}
-                <div className="p-5 text-center">
-                  <h3 className="text-lg font-black text-slate-900 mb-1 line-clamp-1">{teacher.fullName}</h3>
-                  <p className="text-sm font-bold text-emerald-600 mb-2">{teacher.position}</p>
-                  <div className="pt-3 border-t border-slate-100">
-                    <p className="text-xs text-slate-500 line-clamp-1">{teacher.degree}</p>
-                    {teacher.title && (
-                      <p className="text-xs text-slate-400 mt-1">{teacher.title}</p>
-                    )}
+                      <div className="p-5 text-center">
+                        <h3 className="text-lg font-black text-slate-900 mb-1 line-clamp-1">{teacher.fullName}</h3>
+                        <p className="text-sm font-bold text-emerald-600 mb-2">{teacher.position}</p>
+                        <div className="pt-3 border-t border-slate-100">
+                          <p className="text-xs text-slate-500 line-clamp-1">{teacher.degree}</p>
+                          {teacher.title && (
+                            <p className="text-xs text-slate-400 mt-1">{teacher.title}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            )) : (
+            ) : (
               <div className="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
                 <p className="text-slate-400 font-medium">Ma'lumotlar kiritilmagan</p>
               </div>
             )}
           </div>
+          {teachers.length > teachersCarouselSize && (
+            <div className="flex justify-center gap-3 mt-8">
+              <button
+                onClick={() => setTeachersCarouselIndex((prev) => Math.max(0, prev - 1))}
+                className="w-11 h-11 rounded-full border border-slate-300 bg-white flex items-center justify-center"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => setTeachersCarouselIndex((prev) => Math.min(teachers.length - teachersCarouselSize, prev + 1))}
+                className="w-11 h-11 rounded-full border border-slate-300 bg-white flex items-center justify-center"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -706,12 +766,13 @@ const Home: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {gallery.length > 0 ? gallery.slice(0, 8).map((item, idx) => (
+          {gallery.length > 0 ? Array.from({ length: Math.min(galleryCarouselSize, gallery.length) }).map((_, idx) => {
+            const item = gallery[(galleryCarouselIndex + idx) % gallery.length];
+            return (
             <div 
               key={item.id} 
               onClick={() => openGalleryModal(item)}
-              className="group relative aspect-square overflow-hidden rounded-2xl bg-slate-200 cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
-              style={{ animationDelay: `${idx * 50}ms` }}
+              className="group relative aspect-square overflow-hidden rounded-2xl bg-slate-200 cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 animate-fade-in"
             >
               <img 
                 src={item.coverImageUrl} 
@@ -729,12 +790,38 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-          )) : (
+          )}) : (
             <div className="col-span-full py-20 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
               <p className="text-slate-400">Media fayllar kiritilmagan</p>
             </div>
           )}
         </div>
+        {gallery.length > galleryCarouselSize && (
+          <div className="flex justify-center gap-3 mt-8">
+            <button
+              onClick={() => setGalleryCarouselIndex((prev) => (prev - 1 + gallery.length) % gallery.length)}
+              className="w-11 h-11 rounded-full border border-slate-300 bg-white flex items-center justify-center"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => setGalleryCarouselIndex((prev) => (prev + 1) % gallery.length)}
+              className="w-11 h-11 rounded-full border border-slate-300 bg-white flex items-center justify-center"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* Art Gallery Section */}
+      <section 
+        ref={artGalleryReveal.ref}
+        className={`py-24 bg-gradient-to-b from-white to-slate-50 transition-all duration-1000 ${
+          artGalleryReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
+        <ArtGallerySection items={artGallery} />
       </section>
 
       {/* Gallery Modal */}

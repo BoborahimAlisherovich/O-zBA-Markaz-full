@@ -14,6 +14,8 @@ export interface NewsItem {
   images?: NewsImage[]; // All images
   isImportant?: boolean;
   isActive?: boolean;
+  externalLink?: string;
+  videoUrl?: string;
 }
 
 // Gallery image (single image in album)
@@ -99,4 +101,66 @@ export interface Statistics {
   potential: number;
   studentsCount: { year: string; count: number; retraining: number }[];
   retrainingCount: { year: string; count: number }[];
+}
+
+export interface AppContent {
+  history: string;
+  structure: string;
+  structureImage?: string;
+}
+
+export interface InternationalPhoto {
+  id: string;
+  imageUrl: string;
+  order: number;
+}
+
+export interface InternationalVideo {
+  id: string;
+  title: string;
+  videoUrl: string;
+  embedUrl: string;
+  order: number;
+}
+
+export interface InternationalContent {
+  title: string;
+  description: string;
+  photos: InternationalPhoto[];
+  videos: InternationalVideo[];
+}
+
+export interface ForeignPartner {
+  id: string;
+  organizationName: string;
+  country: string;
+  shortInfo: string;
+  imageUrl: string;
+  order: number;
+}
+
+export interface CollaborationProject {
+  id: string;
+  name: string;
+  description: string;
+  date: string;
+  status: 'planned' | 'ongoing' | 'completed';
+  statusDisplay: string;
+  order: number;
+}
+
+export interface ArtGalleryImageItem {
+  id: string;
+  imageUrl: string;
+  order: number;
+}
+
+export interface ArtGalleryItem {
+  id: string;
+  imageUrl: string;
+  name: string;
+  authorFullName: string;
+  text: string;
+  images: ArtGalleryImageItem[];
+  order: number;
 }

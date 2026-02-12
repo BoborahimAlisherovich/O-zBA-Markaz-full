@@ -61,7 +61,7 @@ const Journal: React.FC = () => {
                 <Mail size={18} className="text-blue-600" /> @Uzbamarkaz_jurnali,  @badiiytalimvapedagogika
               </p>
               <p className="flex items-center gap-3 text-gray-600">
-                <Phone size={18} className="text-blue-600" /> +998 77 xxx-xx-xx
+                <Phone size={18} className="text-blue-600" /> (+99877) 363-38-36
               </p>
             </div>
             <hr className="my-6" />
@@ -79,7 +79,7 @@ const Journal: React.FC = () => {
               <li className="flex gap-2"><span>•</span> Annotatsiya va kalit so'zlar 3 tilda beriladi.</li>
             </ul>
             <button className="w-full mt-6 bg-amber-600 text-white py-2 rounded-lg font-bold hover:bg-amber-700 flex items-center justify-center gap-2">
-              Batafsil tartib <ExternalLink size={14} />
+ 
             </button>
           </div>
         </div>

@@ -17,10 +17,9 @@ export const COLORS = {
 export const MENU_ITEMS = [
   { label: 'Bosh sahifa', path: '/', icon: <Home size={18} /> },
   { label: 'Markaz haqida', path: '/about', icon: <Info size={18} /> },
-  { label: 'Ilmiy jurnal', path: '/journal', icon: <BookOpen size={18} /> },
-  { label: 'Tinglovchilar uchun', path: '/students', icon: <GraduationCap size={18} /> },
+  { label: 'Ilmiy jurnal', path: '/journal', icon: <BookOpen size={18} /> },  { label: 'Xalqaro aloqalar', path: '/international', icon: <Globe size={18} /> },  { label: 'Tinglovchilar uchun', path: '/students', icon: <GraduationCap size={18} /> },
   { label: 'Ochiq ma’lumotlar', path: '/open-data', icon: <Database size={18} /> },
-  { label: 'Masofaviy ta’lim', path: 'external', url: 'https://mt.uzbamarkaz.uz', icon: <Globe size={18} /> },
+  { label: 'Masofaviy ta’lim', path: 'external', url: 'https://mt.uzbamalaka.uz', icon: <Globe size={18} /> },
 
 ];
 
