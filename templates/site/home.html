@@ -1,0 +1,738 @@
+{% extends "site/base.html" %}
+
+{% block title %}Bosh sahifa | O'zBA Malaka oshirish markazi{% endblock %}
+
+{% block extra_head %}
+<style>
+    .reveal-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 700ms ease, transform 700ms ease;
+    }
+
+    .reveal-section.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .carousel-track {
+        display: flex;
+        will-change: transform;
+    }
+
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 9999px;
+        background: #cbd5e1;
+        transition: all 250ms ease;
+    }
+
+    .carousel-dot.active {
+        width: 28px;
+        background: #1d4ed8;
+    }
+
+    .course-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 420ms ease, opacity 280ms ease;
+        opacity: 0;
+    }
+
+    .course-body.is-open {
+        opacity: 1;
+    }
+
+    .hero-scroll-indicator {
+        animation: hero-bounce 1.6s ease-in-out infinite;
+    }
+
+    .hero-wheel {
+        animation: hero-wheel 1.6s ease-in-out infinite;
+    }
+
+    @keyframes hero-bounce {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, 8px); }
+    }
+
+    @keyframes hero-wheel {
+        0%, 100% { transform: translateY(0); opacity: 1; }
+        50% { transform: translateY(8px); opacity: 0.45; }
+    }
+
+    .art-square-card {
+        aspect-ratio: 1 / 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="relative h-[72vh] overflow-hidden flex items-center">
+    <div class="absolute inset-0">
+        <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=2071&auto=format&fit=crop" alt="Hero" class="w-full h-full object-cover" style="filter: brightness(0.25);">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-slate-50"></div>
+    </div>
+    <div class="container mx-auto px-6 relative z-10 text-white">
+        <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">San'at orqali tafakkur,<br><span class="text-cyan-300">Ta'lim</span> orqali taraqqiyot!</h1>
+        <p class="text-lg text-gray-300 mb-8">Haqiqiy pedagog o'quvchida ijodkorlikni tarbiyalaydi.</p>
+        <div class="flex gap-4">
+            <a href="{% url 'about' %}" class="px-8 py-3 bg-white text-slate-900 rounded-2xl font-bold">Batafsil</a>
+            <a href="{% url 'students' %}" class="px-8 py-3 bg-white/10 border border-white/30 rounded-2xl font-bold">Tinglovchilar</a>
+        </div>
+    </div>
+    <div class="hero-scroll-indicator absolute left-1/2 bottom-8">
+        <div class="w-8 h-12 border-2 border-white/40 rounded-full flex justify-center pt-2">
+            <div class="hero-wheel w-1.5 h-3 bg-white/70 rounded-full"></div>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 -mt-12 relative z-10 reveal-section">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+            <p class="text-3xl font-black text-slate-900">{{ stats.professors }}</p>
+            <p class="text-sm text-slate-500">Professorlar</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+            <p class="text-3xl font-black text-slate-900">{{ stats.dotsents }}</p>
+            <p class="text-sm text-slate-500">Dotsentlar</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+            <p class="text-3xl font-black text-slate-900">{{ stats.academics }}</p>
+            <p class="text-sm text-slate-500">Akademiklar</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+            <p class="text-3xl font-black text-slate-900">{{ stats.potential }}%</p>
+            <p class="text-sm text-slate-500">Ilmiy salohiyat</p>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 py-20 reveal-section">
+    <div class="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
+        <div class="grid grid-cols-2 border-b border-slate-100">
+            <button id="tab-mo" class="py-5 font-black bg-emerald-50 text-emerald-700">Sertifikat (MO)</button>
+            <button id="tab-qt" class="py-5 font-black bg-slate-50 text-slate-500">Diplom (QT)</button>
+        </div>
+        <div class="p-8">
+            <label class="text-xs font-bold text-slate-400 uppercase">Hujjat raqami</label>
+            <div class="flex flex-col md:flex-row gap-4 mt-2">
+                <input id="reestr-number" type="text" placeholder="000831" class="flex-1 px-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-xl font-bold">
+                <button id="reestr-search" class="px-8 py-4 rounded-xl font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600">Tekshirish</button>
+            </div>
+            <div id="reestr-result" class="mt-6"></div>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 py-10 reveal-section">
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-black text-slate-900">Yangiliklar</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for item in news_list %}
+            <a href="{% url 'news_detail' item.id %}" class="bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-100 hover:-translate-y-1 transition">
+                <div class="h-44 bg-slate-100">
+                    {% with first=item.images.first %}
+                        {% if first %}
+                            <img src="{{ first.image.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-slate-400">Rasm yo'q</div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="p-4">
+                    <p class="text-xs text-slate-400">{{ item.created_at|date:"d.m.Y" }}</p>
+                    <h3 class="font-bold text-slate-800 mt-1">{{ item.title }}</h3>
+                </div>
+            </a>
+        {% empty %}
+            <div class="col-span-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Yangiliklar kiritilmagan</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="py-16 bg-gradient-to-b from-slate-50 to-white reveal-section">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-8">
+            <h2 class="text-4xl font-black text-slate-900">Bizning ustozlar</h2>
+        </div>
+
+        <div id="teachers-carousel" class="relative">
+            <div class="overflow-hidden rounded-3xl">
+                <div class="carousel-track gap-4">
+                    {% for teacher in teachers %}
+                        <div class="teacher-item">
+                            <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-100 h-full">
+                                <div class="aspect-square overflow-hidden bg-slate-100">
+                                    {% if teacher.photo %}
+                                        <img src="{{ teacher.photo.url }}" alt="{{ teacher.full_name }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400">Rasm yo'q</div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-5 text-center">
+                                    <h3 class="text-lg font-black text-slate-900">{{ teacher.full_name }}</h3>
+                                    <p class="text-sm font-bold text-emerald-600">{{ teacher.position }}</p>
+                                    <p class="text-xs text-slate-500 mt-2">{{ teacher.degree }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="w-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Ma'lumotlar kiritilmagan</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button class="teacher-prev absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&lt;</button>
+            <button class="teacher-next absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&gt;</button>
+            <div class="teacher-dots flex justify-center gap-2 mt-6"></div>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 py-16 reveal-section">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-100">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white rounded-t-3xl">
+                <h3 class="text-2xl font-black">Qayta tayyorlash</h3>
+            </div>
+            <div class="p-6 space-y-3 max-h-[400px] overflow-y-auto">
+                {% for course in courses_retraining %}
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <button class="course-toggle w-full text-left" data-course-group="retraining">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 class="font-bold text-slate-900">{{ course.title }}</h4>
+                                    <p class="text-xs text-slate-400">{{ course.duration }}</p>
+                                </div>
+                                <span class="text-slate-400 text-xl leading-none">+</span>
+                            </div>
+                        </button>
+                        <div class="course-body mt-2">
+                            <p class="text-sm text-slate-600">{{ course.description }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="py-8 text-center text-slate-400">Kurslar kiritilmagan</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-100">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white rounded-t-3xl">
+                <h3 class="text-2xl font-black">Malaka oshirish</h3>
+            </div>
+            <div class="p-6 space-y-3 max-h-[400px] overflow-y-auto">
+                {% for course in courses_pd %}
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <button class="course-toggle w-full text-left" data-course-group="pd">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 class="font-bold text-slate-900">{{ course.title }}</h4>
+                                    <p class="text-xs text-slate-400">{{ course.duration }}</p>
+                                </div>
+                                <span class="text-slate-400 text-xl leading-none">+</span>
+                            </div>
+                        </button>
+                        <div class="course-body mt-2">
+                            <p class="text-sm text-slate-600">{{ course.description }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="py-8 text-center text-slate-400">Kurslar kiritilmagan</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 py-16 reveal-section">
+    <div class="text-center mb-8">
+        <h2 class="text-4xl font-black text-slate-900">Fotogalereya</h2>
+    </div>
+
+    <div id="gallery-carousel" class="relative">
+        <div class="overflow-hidden rounded-3xl">
+            <div class="carousel-track gap-4">
+                {% for item in gallery %}
+                    <button class="gallery-card gallery-item relative aspect-square overflow-hidden rounded-2xl bg-slate-200" data-gallery-id="{{ item.id }}">
+                        {% if item.cover_image %}
+                            <img src="{{ item.cover_image.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                        {% endif %}
+                        {% if item.title %}
+                            <span class="absolute bottom-2 left-2 right-2 text-xs text-white font-bold text-left">{{ item.title }}</span>
+                        {% endif %}
+                    </button>
+                {% empty %}
+                    <div class="w-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Media fayllar kiritilmagan</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button class="gallery-prev absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&lt;</button>
+        <button class="gallery-next absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&gt;</button>
+        <div class="gallery-dots flex justify-center gap-2 mt-6"></div>
+    </div>
+</section>
+
+<section class="py-20 bg-gradient-to-b from-white to-slate-50 reveal-section">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-black text-slate-900">Art galereya</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 items-stretch">
+            {% for item in art_gallery %}
+                <button class="art-card art-square-card group relative text-left rounded-3xl overflow-hidden shadow-lg border border-slate-100 mx-auto w-full bg-slate-100" data-art-id="{{ item.id }}">
+                    <div class="absolute inset-0 bg-slate-100">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        {% endif %}
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
+                    <div class="absolute left-0 right-0 bottom-0 p-4">
+                        <h3 class="font-black text-white leading-tight line-clamp-2">{{ item.name }}</h3>
+                        <p class="text-sm text-blue-100 mt-1 line-clamp-1">{{ item.author_full_name }}</p>
+                    </div>
+                </button>
+            {% empty %}
+                <div class="col-span-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Art galereya ma'lumotlari kiritilmagan</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-6 py-8 reveal-section">
+    <div class="text-center mb-10">
+        <h2 class="text-4xl font-black text-slate-900">Foydali manzillar</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {% for link in useful_links %}
+            <a href="{{ link.url }}" target="_blank" class="group flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border border-slate-100 hover:-translate-y-1 transition">
+                <h3 class="text-sm font-black text-slate-900 text-center">{{ link.name }}</h3>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<div id="gallery-modal" class="fixed inset-0 z-50 bg-black/90 hidden items-center justify-center p-4">
+    <button id="gallery-close" class="absolute top-4 right-4 text-white text-2xl">x</button>
+    <button id="gallery-modal-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-3xl px-3 py-1 bg-white/15 rounded-full">&lt;</button>
+    <button id="gallery-modal-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-3xl px-3 py-1 bg-white/15 rounded-full">&gt;</button>
+    <img id="gallery-image" src="" alt="Gallery image" class="max-w-full max-h-full object-contain rounded-lg transition-opacity duration-500">
+    <div id="gallery-modal-dots" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2"></div>
+</div>
+
+<div id="art-modal" class="fixed inset-0 z-50 bg-black/90 hidden items-center justify-center p-4">
+    <button id="art-close" class="absolute top-4 right-4 text-white text-2xl">x</button>
+    <button id="art-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-3xl px-3 py-1 bg-white/15 rounded-full">&lt;</button>
+    <button id="art-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-3xl px-3 py-1 bg-white/15 rounded-full">&gt;</button>
+    <div class="max-w-5xl w-full">
+        <div>
+            <img id="art-image" src="" alt="Art image" class="w-full max-h-[72vh] object-contain rounded-2xl bg-black/40 transition-opacity duration-500">
+            <div id="art-dots" class="flex gap-2 justify-center mt-4"></div>
+        </div>
+        <div class="bg-white/95 rounded-2xl p-5 mt-5">
+            <h3 id="art-title" class="text-xl font-black text-slate-900"></h3>
+            <p id="art-author" class="text-sm text-slate-600 mt-1"></p>
+            <p id="art-text" class="text-sm text-slate-700 mt-3"></p>
+        </div>
+    </div>
+</div>
+
+{{ listeners_json|json_script:"listeners-data" }}
+{{ gallery_json|json_script:"gallery-data" }}
+{{ art_gallery_json|json_script:"art-gallery-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const listeners = JSON.parse(document.getElementById('listeners-data').textContent || '[]');
+    const galleryData = JSON.parse(document.getElementById('gallery-data').textContent || '[]');
+    const artGalleryData = JSON.parse(document.getElementById('art-gallery-data').textContent || '[]');
+
+    let activeType = 'MO';
+    const tabMo = document.getElementById('tab-mo');
+    const tabQt = document.getElementById('tab-qt');
+    const searchBtn = document.getElementById('reestr-search');
+    const input = document.getElementById('reestr-number');
+    const result = document.getElementById('reestr-result');
+
+    function activate(type) {
+        activeType = type;
+        if (type === 'MO') {
+            tabMo.className = 'py-5 font-black bg-emerald-50 text-emerald-700';
+            tabQt.className = 'py-5 font-black bg-slate-50 text-slate-500';
+            searchBtn.className = 'px-8 py-4 rounded-xl font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600';
+        } else {
+            tabQt.className = 'py-5 font-black bg-blue-50 text-blue-700';
+            tabMo.className = 'py-5 font-black bg-slate-50 text-slate-500';
+            searchBtn.className = 'px-8 py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-500 to-indigo-600';
+        }
+        result.innerHTML = '';
+        input.value = '';
+    }
+
+    tabMo.addEventListener('click', function () { activate('MO'); });
+    tabQt.addEventListener('click', function () { activate('QT'); });
+
+    searchBtn.addEventListener('click', function () {
+        const number = (input.value || '').trim();
+        if (!number) return;
+        const found = listeners.find(function (item) {
+            return (item.record_type || '').toUpperCase() === activeType && (item.number || '').toString().includes(number);
+        });
+        if (!found) {
+            result.innerHTML = '<div class="p-4 rounded-xl bg-red-50 text-red-700 font-semibold">Ma\'lumot topilmadi</div>';
+            return;
+        }
+        result.innerHTML = '<div class="p-5 rounded-2xl bg-emerald-50"><h4 class="text-xl font-black text-slate-900">' + found.full_name + '</h4><div class="mt-3 text-sm text-slate-600 space-y-1"><p><b>Seriya va raqam:</b> ' + found.series + ' ' + found.number + '</p><p><b>Ish joyi:</b> ' + (found.workplace || '-') + '</p><p><b>Yo\'nalish:</b> ' + (found.course_type || '-') + '</p><p><b>O\'qish muddati:</b> ' + (found.duration || '-') + '</p></div></div>';
+    });
+
+    function initCarousel(options) {
+        const root = document.getElementById(options.rootId);
+        if (!root) return;
+
+        const track = root.querySelector('.carousel-track');
+        const items = Array.from(track.children);
+        const prevBtn = root.querySelector(options.prevSelector);
+        const nextBtn = root.querySelector(options.nextSelector);
+        const dotsWrap = root.querySelector(options.dotsSelector);
+
+        if (!items.length) return;
+
+        let index = 0;
+        let visible = 4;
+        let itemWidth = 0;
+        let maxIndex = 0;
+        let timer = null;
+
+        function getVisible() {
+            if (window.innerWidth < 640) return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 4;
+        }
+
+        function buildDots() {
+            if (!dotsWrap) return;
+            dotsWrap.innerHTML = '';
+            const pages = maxIndex + 1;
+            for (let i = 0; i < pages; i += 1) {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot' + (i === index ? ' active' : '');
+                dot.addEventListener('click', function () {
+                    index = i;
+                    render(true);
+                    restartAuto();
+                });
+                dotsWrap.appendChild(dot);
+            }
+        }
+
+        function paintDots() {
+            if (!dotsWrap) return;
+            const dots = dotsWrap.querySelectorAll('.carousel-dot');
+            dots.forEach(function (dot, i) {
+                if (i === index) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }
+
+        function render(animated) {
+            track.style.transition = animated ? 'transform 1400ms ease' : 'none';
+            track.style.transform = 'translateX(-' + (index * itemWidth) + 'px)';
+            paintDots();
+        }
+
+        function resize() {
+            visible = getVisible();
+            itemWidth = root.clientWidth / visible;
+            items.forEach(function (item) {
+                item.style.flex = '0 0 ' + itemWidth + 'px';
+                item.style.maxWidth = itemWidth + 'px';
+            });
+            maxIndex = Math.max(0, items.length - visible);
+            if (index > maxIndex) index = 0;
+            buildDots();
+            render(false);
+        }
+
+        function next() {
+            index = index >= maxIndex ? 0 : index + 1;
+            render(true);
+        }
+
+        function prev() {
+            index = index <= 0 ? maxIndex : index - 1;
+            render(true);
+        }
+
+        function restartAuto() {
+            if (timer) clearInterval(timer);
+            if (maxIndex < 1) return;
+            timer = setInterval(next, options.interval || 4500);
+        }
+
+        if (nextBtn) nextBtn.addEventListener('click', function () { next(); restartAuto(); });
+        if (prevBtn) prevBtn.addEventListener('click', function () { prev(); restartAuto(); });
+
+        root.addEventListener('mouseenter', function () { if (timer) clearInterval(timer); });
+        root.addEventListener('mouseleave', restartAuto);
+
+        window.addEventListener('resize', resize);
+
+        resize();
+        restartAuto();
+    }
+
+    initCarousel({
+        rootId: 'teachers-carousel',
+        prevSelector: '.teacher-prev',
+        nextSelector: '.teacher-next',
+        dotsSelector: '.teacher-dots',
+        interval: 5000
+    });
+
+    initCarousel({
+        rootId: 'gallery-carousel',
+        prevSelector: '.gallery-prev',
+        nextSelector: '.gallery-next',
+        dotsSelector: '.gallery-dots',
+        interval: 4200
+    });
+
+    const openByGroup = {};
+    document.querySelectorAll('.course-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const group = btn.getAttribute('data-course-group') || 'all';
+            const body = btn.parentElement.querySelector('.course-body');
+            const icon = btn.querySelector('span');
+            const isOpen = body.classList.contains('is-open');
+
+            document.querySelectorAll('.course-toggle[data-course-group="' + group + '"]').forEach(function (siblingBtn) {
+                const siblingBody = siblingBtn.parentElement.querySelector('.course-body');
+                const siblingIcon = siblingBtn.querySelector('span');
+                siblingBody.classList.remove('is-open');
+                siblingBody.style.maxHeight = '0px';
+                siblingIcon.textContent = '+';
+            });
+
+            if (!isOpen) {
+                body.classList.add('is-open');
+                body.style.maxHeight = body.scrollHeight + 'px';
+                icon.textContent = '-';
+            }
+
+            openByGroup[group] = !isOpen;
+        });
+    });
+
+    const modal = document.getElementById('gallery-modal');
+    const image = document.getElementById('gallery-image');
+    const closeBtn = document.getElementById('gallery-close');
+    const modalPrev = document.getElementById('gallery-modal-prev');
+    const modalNext = document.getElementById('gallery-modal-next');
+    const modalDots = document.getElementById('gallery-modal-dots');
+    let modalImages = [];
+    let modalIndex = 0;
+    let modalTimer = null;
+
+    function stopModalAuto() {
+        if (modalTimer) {
+            clearInterval(modalTimer);
+            modalTimer = null;
+        }
+    }
+
+    function startModalAuto() {
+        stopModalAuto();
+        if (modalImages.length < 2) return;
+        modalTimer = setInterval(function () {
+            modalIndex = (modalIndex + 1) % modalImages.length;
+            renderModalImage();
+        }, 3200);
+    }
+
+    function renderModalDots() {
+        modalDots.innerHTML = '';
+        modalImages.forEach(function (_, idx) {
+            const dot = document.createElement('button');
+            dot.className = 'w-2.5 h-2.5 rounded-full ' + (idx === modalIndex ? 'bg-white' : 'bg-white/45');
+            dot.addEventListener('click', function () {
+                modalIndex = idx;
+                renderModalImage();
+                startModalAuto();
+            });
+            modalDots.appendChild(dot);
+        });
+    }
+
+    function renderModalImage() {
+        image.style.opacity = '0.2';
+        setTimeout(function () {
+            image.src = modalImages[modalIndex] || '';
+            image.style.opacity = '1';
+            renderModalDots();
+        }, 140);
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        stopModalAuto();
+    }
+
+    document.querySelectorAll('.gallery-card').forEach(function (el) {
+        el.addEventListener('click', function () {
+            const id = Number(el.getAttribute('data-gallery-id'));
+            const item = galleryData.find(function (g) { return g.id === id; });
+            if (!item) return;
+            modalImages = [];
+            if (item.cover_image_url) modalImages.push(item.cover_image_url);
+            (item.images || []).forEach(function (img) {
+                if (img.image_url) modalImages.push(img.image_url);
+            });
+            modalIndex = 0;
+            renderModalImage();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            startModalAuto();
+        });
+    });
+    closeBtn.addEventListener('click', closeModal);
+    modalPrev.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!modalImages.length) return;
+        modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
+        renderModalImage();
+        startModalAuto();
+    });
+    modalNext.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!modalImages.length) return;
+        modalIndex = (modalIndex + 1) % modalImages.length;
+        renderModalImage();
+        startModalAuto();
+    });
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    const artModal = document.getElementById('art-modal');
+    const artImage = document.getElementById('art-image');
+    const artClose = document.getElementById('art-close');
+    const artPrev = document.getElementById('art-prev');
+    const artNext = document.getElementById('art-next');
+    const artDots = document.getElementById('art-dots');
+    const artTitle = document.getElementById('art-title');
+    const artAuthor = document.getElementById('art-author');
+    const artText = document.getElementById('art-text');
+
+    let artImages = [];
+    let artIndex = 0;
+    let artTimer = null;
+
+    function stopArtAuto() {
+        if (artTimer) {
+            clearInterval(artTimer);
+            artTimer = null;
+        }
+    }
+
+    function startArtAuto() {
+        stopArtAuto();
+        if (artImages.length < 2) return;
+        artTimer = setInterval(function () {
+            artIndex = (artIndex + 1) % artImages.length;
+            renderArt();
+        }, 3500);
+    }
+
+    function renderArtDots() {
+        artDots.innerHTML = '';
+        artImages.forEach(function (_, idx) {
+            const dot = document.createElement('button');
+            dot.className = 'w-2.5 h-2.5 rounded-full ' + (idx === artIndex ? 'bg-slate-900' : 'bg-slate-300');
+            dot.addEventListener('click', function () {
+                artIndex = idx;
+                renderArt();
+                startArtAuto();
+            });
+            artDots.appendChild(dot);
+        });
+    }
+
+    function renderArt() {
+        artImage.style.opacity = '0.2';
+        setTimeout(function () {
+            artImage.src = artImages[artIndex] || '';
+            artImage.style.opacity = '1';
+            renderArtDots();
+        }, 140);
+    }
+
+    function closeArtModal() {
+        artModal.classList.add('hidden');
+        artModal.classList.remove('flex');
+        stopArtAuto();
+    }
+
+    document.querySelectorAll('.art-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            const id = Number(card.getAttribute('data-art-id'));
+            const item = artGalleryData.find(function (x) { return x.id === id; });
+            if (!item) return;
+            artImages = [];
+            if (item.image_url) artImages.push(item.image_url);
+            (item.images || []).forEach(function (img) {
+                if (img.image_url) artImages.push(img.image_url);
+            });
+            artIndex = 0;
+            artTitle.textContent = item.name || '';
+            artAuthor.textContent = item.author || '';
+            artText.textContent = item.text || '';
+            renderArt();
+            artModal.classList.remove('hidden');
+            artModal.classList.add('flex');
+            startArtAuto();
+        });
+    });
+
+    artClose.addEventListener('click', closeArtModal);
+    artPrev.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!artImages.length) return;
+        artIndex = (artIndex - 1 + artImages.length) % artImages.length;
+        renderArt();
+        startArtAuto();
+    });
+    artNext.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!artImages.length) return;
+        artIndex = (artIndex + 1) % artImages.length;
+        renderArt();
+        startArtAuto();
+    });
+    artModal.addEventListener('click', function (e) {
+        if (e.target === artModal) {
+            closeArtModal();
+        }
+    });
+
+    const sections = document.querySelectorAll('.reveal-section');
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    sections.forEach(function (section) { observer.observe(section); });
+})();
+</script>
+{% endblock %}

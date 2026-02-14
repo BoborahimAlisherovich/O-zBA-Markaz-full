@@ -1,0 +1,350 @@
+{% extends "site/base.html" %}
+
+{% block title %}Xalqaro aloqalar | O'zBA Malaka oshirish markazi{% endblock %}
+
+{% block extra_head %}
+<style>
+    .intl-track {
+        display: flex;
+        transition: transform 1200ms ease;
+        will-change: transform;
+    }
+
+    .intl-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 9999px;
+        background: #cbd5e1;
+        transition: all 250ms ease;
+    }
+
+    .intl-dot.active {
+        width: 28px;
+        background: #0ea5e9;
+    }
+
+    .photo-stage {
+        transition: all 900ms ease;
+    }
+
+    .photo-stage.center {
+        width: 58%;
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+
+    .photo-stage.side {
+        width: 18%;
+        opacity: 0.62;
+        filter: blur(1.4px);
+        transform: scale(0.9);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <section class="relative h-[44vh] overflow-hidden flex items-center bg-gradient-to-r from-sky-700 to-cyan-700">
+        <div class="container mx-auto px-6 relative z-10 text-white">
+            <h1 class="text-5xl font-black">Xalqaro aloqalar</h1>
+        </div>
+    </section>
+
+    <section class="container mx-auto px-6 py-16">
+        <h2 class="text-4xl font-black text-slate-900 mb-4">{{ international_content.title|default:"Xalqaro aloqalar to'g'risida" }}</h2>
+        <div class="text-slate-600 leading-8 whitespace-pre-line">{{ international_content.description|default:"Hozircha ma'lumot kiritilmagan." }}</div>
+    </section>
+
+    <section class="container mx-auto px-6 pb-12">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-black text-slate-900">Xorijiy hamkorlar</h2>
+        </div>
+
+        <div id="partners-carousel" class="relative">
+            <div class="overflow-hidden rounded-3xl">
+                <div class="intl-track gap-6">
+                    {% for partner in foreign_partners %}
+                        <div class="partner-item">
+                            <div class="rounded-3xl bg-white border border-slate-200 shadow-lg overflow-hidden h-full">
+                                <div class="aspect-[4/3] bg-slate-100 overflow-hidden p-4 flex items-center justify-center relative">
+                                    {% if partner.image %}
+                                        <img src="{{ partner.image.url }}" alt="{{ partner.organization_name }}" class="max-w-full max-h-full object-contain rounded-xl">
+                                    {% else %}
+                                        <div class="text-slate-400 text-sm">Rasm mavjud emas</div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-5">
+                                    <h3 class="text-lg font-black text-slate-900">{{ partner.organization_name }}</h3>
+                                    <p class="text-sm font-semibold text-cyan-700 mt-1">{{ partner.country }}</p>
+                                    <p class="text-sm text-slate-600 mt-3">{{ partner.short_info }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="w-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Hamkorlar kiritilmagan</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="partners-prev absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&lt;</button>
+            <button class="partners-next absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&gt;</button>
+            <div class="partners-dots flex justify-center gap-2 mt-6"></div>
+        </div>
+    </section>
+
+    <section class="container mx-auto px-6 py-12">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-black text-slate-900">Hamkorlikda qilingan loyihalar</h2>
+        </div>
+        <div class="space-y-5">
+            {% for project in projects %}
+                <div class="rounded-3xl bg-white border border-slate-200 shadow-md p-6">
+                    <div class="flex flex-wrap justify-between gap-3 mb-2">
+                        <h3 class="text-2xl font-black text-slate-900">{{ project.name }}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold {% if project.status == 'planned' %}bg-amber-100 text-amber-700{% elif project.status == 'ongoing' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-700{% endif %}">{{ project.get_status_display }}</span>
+                    </div>
+                    <p class="text-slate-600">{{ project.description }}</p>
+                    <p class="text-sm text-slate-500 mt-3">Sana: {{ project.date|date:"d.m.Y" }}</p>
+                </div>
+            {% empty %}
+                <div class="py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Loyihalar kiritilmagan</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="container mx-auto px-6 py-12">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-black text-slate-900">Fotosuratlar</h2>
+        </div>
+        {% if photos %}
+            <div class="relative py-4">
+                <div class="flex items-center justify-center gap-4">
+                    <button id="photo-prev" class="w-12 h-12 rounded-full bg-white border border-slate-300">&lt;</button>
+                    <div id="photo-left" class="photo-stage side rounded-3xl overflow-hidden">
+                        <div class="aspect-[16/9] bg-slate-200"></div>
+                    </div>
+                    <div id="photo-center" class="photo-stage center rounded-3xl overflow-hidden shadow-xl">
+                        <div class="aspect-[16/9] bg-slate-200"></div>
+                    </div>
+                    <div id="photo-right" class="photo-stage side rounded-3xl overflow-hidden">
+                        <div class="aspect-[16/9] bg-slate-200"></div>
+                    </div>
+                    <button id="photo-next" class="w-12 h-12 rounded-full bg-white border border-slate-300">&gt;</button>
+                </div>
+                <div id="photo-dots" class="flex justify-center gap-2 mt-6"></div>
+            </div>
+        {% else %}
+            <div class="py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Fotosuratlar kiritilmagan</div>
+        {% endif %}
+    </section>
+
+    <section class="container mx-auto px-6 py-12 pb-20">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-black text-slate-900">Video to'plami</h2>
+        </div>
+        <div id="videos-carousel" class="relative">
+            <div class="overflow-hidden rounded-3xl">
+                <div class="intl-track gap-6">
+                    {% for video in videos_json %}
+                        <div class="video-item">
+                            <div class="rounded-3xl overflow-hidden shadow-lg border border-slate-200 bg-white h-full">
+                                <div class="aspect-video bg-slate-900">
+                                    <iframe src="{{ video.embed_url }}" title="{{ video.title|default:'Video' }}" class="video-frame w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                </div>
+                                <div class="p-4">
+                                    <p class="font-semibold text-slate-800">{{ video.title|default:"Video" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="w-full py-12 text-center text-slate-400 border-2 border-dashed rounded-2xl">Videolar kiritilmagan</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="videos-prev absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&lt;</button>
+            <button class="videos-next absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-slate-300 bg-white shadow">&gt;</button>
+            <div class="videos-dots flex justify-center gap-2 mt-6"></div>
+        </div>
+    </section>
+</div>
+
+{{ partners_json|json_script:"partners-data" }}
+{{ photos_json|json_script:"photos-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const partnersData = JSON.parse(document.getElementById('partners-data').textContent || '[]');
+    const photosData = JSON.parse(document.getElementById('photos-data').textContent || '[]');
+
+    function initLinearCarousel(options) {
+        const root = document.getElementById(options.rootId);
+        if (!root) return;
+        const track = root.querySelector('.intl-track');
+        const items = Array.from(track.children);
+        const prevBtn = root.querySelector(options.prevSelector);
+        const nextBtn = root.querySelector(options.nextSelector);
+        const dotsWrap = root.querySelector(options.dotsSelector);
+        if (!items.length) return;
+
+        let index = 0;
+        let visible = options.defaultVisible || 4;
+        let itemWidth = 0;
+        let maxIndex = 0;
+        let timer = null;
+
+        function getVisible() {
+            if (window.innerWidth < 640) return 1;
+            if (window.innerWidth < 1024) return options.mdVisible || 2;
+            return options.defaultVisible || 4;
+        }
+
+        function drawDots() {
+            if (!dotsWrap) return;
+            dotsWrap.innerHTML = '';
+            const pages = maxIndex + 1;
+            for (let i = 0; i < pages; i += 1) {
+                const dot = document.createElement('button');
+                dot.className = 'intl-dot' + (i === index ? ' active' : '');
+                dot.addEventListener('click', function () {
+                    index = i;
+                    render(true);
+                    restartAuto();
+                });
+                dotsWrap.appendChild(dot);
+            }
+        }
+
+        function paintDots() {
+            if (!dotsWrap) return;
+            dotsWrap.querySelectorAll('.intl-dot').forEach(function (dot, i) {
+                if (i === index) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }
+
+        function render(animated) {
+            track.style.transition = animated ? 'transform 1200ms ease' : 'none';
+            track.style.transform = 'translateX(-' + (index * itemWidth) + 'px)';
+            paintDots();
+        }
+
+        function resize() {
+            visible = getVisible();
+            itemWidth = root.clientWidth / visible;
+            items.forEach(function (item) {
+                item.style.flex = '0 0 ' + itemWidth + 'px';
+                item.style.maxWidth = itemWidth + 'px';
+            });
+            maxIndex = Math.max(0, items.length - visible);
+            if (index > maxIndex) index = 0;
+            drawDots();
+            render(false);
+        }
+
+        function next() { index = index >= maxIndex ? 0 : index + 1; render(true); }
+        function prev() { index = index <= 0 ? maxIndex : index - 1; render(true); }
+
+        function restartAuto() {
+            if (timer) clearInterval(timer);
+            if (maxIndex < 1) return;
+            timer = setInterval(next, options.interval || 4200);
+        }
+
+        if (nextBtn) nextBtn.addEventListener('click', function () { next(); restartAuto(); });
+        if (prevBtn) prevBtn.addEventListener('click', function () { prev(); restartAuto(); });
+        root.addEventListener('mouseenter', function () { if (timer) clearInterval(timer); });
+        root.addEventListener('mouseleave', restartAuto);
+
+        window.addEventListener('resize', resize);
+        resize();
+        restartAuto();
+    }
+
+    initLinearCarousel({
+        rootId: 'partners-carousel',
+        prevSelector: '.partners-prev',
+        nextSelector: '.partners-next',
+        dotsSelector: '.partners-dots',
+        defaultVisible: 4,
+        mdVisible: 2,
+        interval: 4700,
+    });
+
+    initLinearCarousel({
+        rootId: 'videos-carousel',
+        prevSelector: '.videos-prev',
+        nextSelector: '.videos-next',
+        dotsSelector: '.videos-dots',
+        defaultVisible: 2,
+        mdVisible: 1,
+        interval: 5200,
+    });
+
+    const left = document.getElementById('photo-left');
+    const center = document.getElementById('photo-center');
+    const right = document.getElementById('photo-right');
+    const prevPhoto = document.getElementById('photo-prev');
+    const nextPhoto = document.getElementById('photo-next');
+    const photoDots = document.getElementById('photo-dots');
+
+    if (left && center && right && photosData.length) {
+        let photoIndex = 0;
+        let photoTimer = null;
+
+        function imgEl(src) {
+            return '<div class="aspect-[16/9]"><img src="' + src + '" alt="Foto" class="w-full h-full object-cover"></div>';
+        }
+
+        function renderPhotoDots() {
+            photoDots.innerHTML = '';
+            photosData.forEach(function (_, idx) {
+                const dot = document.createElement('button');
+                dot.className = 'intl-dot' + (idx === photoIndex ? ' active' : '');
+                dot.addEventListener('click', function () {
+                    photoIndex = idx;
+                    renderPhotos();
+                    restartPhotoAuto();
+                });
+                photoDots.appendChild(dot);
+            });
+        }
+
+        function renderPhotos() {
+            const current = photoIndex % photosData.length;
+            const prev = (current - 1 + photosData.length) % photosData.length;
+            const next = (current + 1) % photosData.length;
+            center.innerHTML = imgEl(photosData[current].image_url);
+            left.innerHTML = imgEl(photosData[prev].image_url);
+            right.innerHTML = imgEl(photosData[next].image_url);
+            renderPhotoDots();
+        }
+
+        function restartPhotoAuto() {
+            if (photoTimer) clearInterval(photoTimer);
+            if (photosData.length < 2) return;
+            photoTimer = setInterval(function () {
+                photoIndex = (photoIndex + 1) % photosData.length;
+                renderPhotos();
+            }, 3400);
+        }
+
+        prevPhoto.addEventListener('click', function () {
+            photoIndex = (photoIndex - 1 + photosData.length) % photosData.length;
+            renderPhotos();
+            restartPhotoAuto();
+        });
+
+        nextPhoto.addEventListener('click', function () {
+            photoIndex = (photoIndex + 1) % photosData.length;
+            renderPhotos();
+            restartPhotoAuto();
+        });
+
+        renderPhotos();
+        restartPhotoAuto();
+    }
+})();
+</script>
+{% endblock %}

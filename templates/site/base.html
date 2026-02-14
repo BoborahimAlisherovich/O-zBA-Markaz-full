@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>{% block title %}O'zBA Malaka oshirish markazi{% endblock %}</title>
+    <meta name="description" content="O'zbekiston Badiiy akademiyasi huzuridagi Badiiy ta'lim yo'nalishlarida pedagog va mutaxassis kadrlarni qayta tayyorlash hamda malakasini oshirish markazi.">
+    <link rel="icon" type="image/png" href="{{ site_logo_url }}">
+    <link rel="apple-touch-icon" href="{{ site_logo_url }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-slate-900">
+    <div class="bg-blue-900 text-white text-xs py-2 hidden md:block">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex gap-4">
+                <span>{{ center_phone }}</span>
+                <span>{{ center_email }}</span>
+            </div>
+            <a href="https://reestr.uzbamalaka.uz" target="_blank" class="hover:text-amber-400">Diplom va sertifikatlar reestri</a>
+        </div>
+    </div>
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center gap-6">
+            <a href="{% url 'home' %}" class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full overflow-hidden shrink-0">
+                    <img src="{{ site_logo_url }}" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div class="hidden sm:block">
+                    <h1 class="text-sm font-bold leading-tight text-blue-900">
+                        O'zbekiston Badiiy akademiyasi huzuridagi<br>
+                        Badiiy ta'lim yo'nalishlarida pedagog<br>
+                        hamda ularning malakasini oshirish markazi<br>
+                        va mutaxassis kadrlarni qayta tayyorlash
+                    </h1>
+                </div>
+            </a>
+
+            <nav class="hidden lg:flex items-center gap-6">
+                {% for item in menu_items %}
+                    <a href="{% url item.url_name %}" class="text-sm font-medium hover:text-blue-700 {% if active_page == item.url_name %}text-blue-900 border-b-2 border-amber-500{% else %}text-gray-600{% endif %}">
+                        {{ item.label }}
+                    </a>
+                {% endfor %}
+                <a href="https://mt.uzbamalaka.uz" target="_blank" class="text-sm font-medium hover:text-blue-700 text-gray-600">Masofaviy ta'lim</a>
+            </nav>
+
+            <button id="mobile-menu-toggle" class="lg:hidden px-3 py-2 border rounded-lg">Menu</button>
+        </div>
+
+        <div id="mobile-menu" class="lg:hidden hidden border-t px-4 py-4 bg-white">
+            <div class="flex flex-col gap-3">
+                {% for item in menu_items %}
+                    <a href="{% url item.url_name %}" class="p-2 rounded hover:bg-gray-100 {% if active_page == item.url_name %}font-bold text-blue-700{% endif %}">{{ item.label }}</a>
+                {% endfor %}
+                <a href="https://mt.uzbamalaka.uz" target="_blank" class="p-2 rounded hover:bg-gray-100">Masofaviy ta'lim</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-900 text-white pt-12 pb-6 mt-16">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+                <h3 class="text-xl font-bold mb-4">Markaz haqida</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Badiiy ta'lim yo'nalishlarida pedagog va mutaxassis kadrlarni qayta tayyorlash hamda ularning malakasini oshirish markazi.</p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Bog'lanish</h3>
+                <ul class="text-gray-400 text-sm space-y-2">
+                    <li>{{ center_address }}</li>
+                    <li>{{ center_phone }}</li>
+                    <li>{{ center_email }}</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Foydali havolalar</h3>
+                <ul class="text-gray-400 text-sm space-y-2">
+                    <li><a href="{% url 'journal' %}" class="hover:text-amber-400">Ilmiy jurnal</a></li>
+                    <li><a href="https://mt.uzbamalaka.uz" target="_blank" class="hover:text-amber-400">Masofaviy ta'lim</a></li>
+                    <li><a href="https://reestr.uzbamalaka.uz" target="_blank" class="hover:text-amber-400">Diplom va sertifikatlar reestri</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 mt-10 pt-6 border-t border-gray-800 text-center text-gray-500 text-xs">
+            &copy; {% now "Y" %} O'zBA huzuridagi Markaz. Barcha huquqlar himoyalangan.
+        </div>
+    </footer>
+
+    <script>
+      (function () {
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const menu = document.getElementById('mobile-menu');
+        if (toggle && menu) {
+          toggle.addEventListener('click', function () {
+            menu.classList.toggle('hidden');
+          });
+        }
+      })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

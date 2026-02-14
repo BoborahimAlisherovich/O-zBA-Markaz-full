@@ -1,0 +1,66 @@
+{% extends "site/base.html" %}
+
+{% block title %}Ilmiy jurnal | O'zBA Malaka oshirish markazi{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen pb-20">
+    <div class="bg-blue-900 text-white py-12">
+        <div class="container mx-auto px-10">
+            <h1 class="text-5xl font-bold mb-4">Badiiy ta'lim va pedagogika</h1>
+            <p class="text-blue-100 text-lg leading-relaxed">Ushbu ilmiy jurnal san'at ta'limidagi tadqiqotlar va metodikalarni yoritib boradi.</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="lg:col-span-2 space-y-8">
+            <h2 class="text-3xl font-bold text-gray-900 border-b pb-4">Jurnal sonlari</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {% for issue in journal_issues %}
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex gap-4">
+                        <div class="w-24 h-32 bg-gray-100 rounded shrink-0 overflow-hidden">
+                            {% if issue.thumbnail %}
+                                <img src="{{ issue.thumbnail.url }}" alt="Jurnal {{ issue.year }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-xs text-gray-400">Muqova</div>
+                            {% endif %}
+                        </div>
+                        <div class="flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-gray-900">Jurnal {{ issue.year }}</h3>
+                                <p class="text-sm text-gray-500">{% if issue.issue_number %}{{ issue.issue_number }}-son{% else %}{{ issue.year }}-yil soni{% endif %}</p>
+                            </div>
+                            {% if issue.pdf_file %}
+                                <a href="{{ issue.pdf_file.url }}" target="_blank" class="text-blue-600 font-bold text-sm hover:underline">PDF ko'rish</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-full py-12 text-center text-gray-500 border-2 border-dashed rounded-2xl">Hozircha raqamli arxiv mavjud emas.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-xl font-bold mb-4 text-blue-900">Bog'lanish</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <p>@Uzbamarkaz_jurnali, @badiiytalimvapedagogika</p>
+                    <p>{{ center_phone }}</p>
+                </div>
+                <hr class="my-6">
+                <h4 class="font-bold mb-2">Tahririyat manzili:</h4>
+                <p class="text-sm text-gray-500 leading-relaxed">{{ center_address }}</p>
+            </div>
+
+            <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+                <h3 class="text-xl font-bold mb-4 text-amber-800">Mualliflarga</h3>
+                <ul class="space-y-3 text-sm text-amber-900">
+                    <li>- Maqolalar o'zbek, rus, qoraqalpoq yoki ingliz tillarida qabul qilinadi.</li>
+                    <li>- Maqola hajmi 5-8 bet bo'lishi lozim.</li>
+                    <li>- Annotatsiya va kalit so'zlar 3 tilda beriladi.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+Django==4.2.28
+django-jazzmin==3.0.1
+pandas==2.2.3
+openpyxl==3.1.5
+Pillow==12.1.0
+whitenoise==6.11.0
+gunicorn==25.0.0
+# Optional production DB driver (PostgreSQL)
+psycopg2-binary==2.9.11

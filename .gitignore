@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,react,django
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,react,django
+# Created by https://www.toptal.com/developers/gitignore/api/django,python,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=django,python,visualstudiocode
 
 ### Django ###
 *.log
@@ -263,21 +263,6 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-### react ###
-.DS_*
-logs
-**/*.backup.*
-**/*.back.*
-
-node_modules
-bower_components
-
-*.sublime*
-
-psd
-thumb
-sketch
-
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
@@ -297,4 +282,4 @@ sketch
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,react,django
+# End of https://www.toptal.com/developers/gitignore/api/django,python,visualstudiocode

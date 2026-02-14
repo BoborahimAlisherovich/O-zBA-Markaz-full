@@ -1,0 +1,119 @@
+{% extends "site/base.html" %}
+
+{% block title %}Markaz haqida | O'zBA Malaka oshirish markazi{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen pb-20">
+    <div class="bg-blue-900 text-white py-20">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-4">Markaz haqida</h1>
+            <p class="text-blue-200 max-w-2xl">Markaz tarixi, tuzilmasi va xodimlar jamoasi haqida ma'lumotlar.</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 -mt-10">
+        <div class="bg-white rounded-xl shadow-lg p-4 flex flex-wrap gap-2 mb-10">
+            <button class="about-tab px-6 py-2 rounded-lg font-medium bg-blue-700 text-white" data-target="info">Umumiy ma'lumot</button>
+            <button class="about-tab px-6 py-2 rounded-lg font-medium bg-gray-100 text-gray-600" data-target="structure">Markaz tuzilmasi</button>
+            <button class="about-tab px-6 py-2 rounded-lg font-medium bg-gray-100 text-gray-600" data-target="leadership">Rahbariyat</button>
+            <button class="about-tab px-6 py-2 rounded-lg font-medium bg-gray-100 text-gray-600" data-target="staff">Markaziy apparat</button>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] p-8 lg:p-16 shadow-xl border border-gray-100 min-h-[500px]">
+            <section id="about-info" class="about-section">
+                <h2 class="text-3xl font-black mb-8 text-slate-900 border-l-4 border-blue-600 pl-4">Tarixi va faoliyati</h2>
+                <div class="text-slate-700 leading-relaxed space-y-4 text-lg whitespace-pre-line">{{ about_content.history|default:"Ma'lumot kiritilmagan." }}</div>
+            </section>
+
+            <section id="about-structure" class="about-section hidden">
+                <h2 class="text-3xl font-black mb-6 text-slate-900 text-center">Markaz tashkiliy tuzilmasi</h2>
+                <p class="text-slate-600 leading-relaxed mb-8 text-center text-lg italic">{{ about_content.structure|default:"Tuzilma haqida ma'lumot kiritilmagan." }}</p>
+                <div class="bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-gray-100 p-4 lg:p-10">
+                    {% if about_content.structure_image %}
+                        <img src="{{ about_content.structure_image.url }}" alt="Markaz tuzilmasi" class="w-full h-auto object-contain">
+                    {% else %}
+                        <div class="p-20 text-center text-gray-400 bg-gray-50 border-4 border-dashed border-gray-100 rounded-[2rem]">
+                            Tuzilma rasmi yuklanmagan
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section id="about-leadership" class="about-section hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-20 gap-x-12 pt-10">
+                    {% for person in leadership %}
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-64 h-64 rounded-full overflow-hidden mb-10 shadow-2xl border-[12px] border-white ring-1 ring-slate-100">
+                                {% if person.photo %}
+                                    <img src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-slate-400">Rasm yo'q</div>
+                                {% endif %}
+                            </div>
+                            <h3 class="text-2xl font-black text-slate-900 mb-2">{{ person.full_name }}</h3>
+                            <p class="text-slate-600 text-base leading-relaxed">{{ person.position }}</p>
+                            <div class="mt-4 text-xs text-slate-400 space-y-1">
+                                <p>{{ person.phone|default:"Noma'lum" }}</p>
+                                <p>{{ person.reception_hours|default:"Noma'lum" }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-full py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-400">Ma'lumotlar kiritilmagan</div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section id="about-staff" class="about-section hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-20 gap-x-12 pt-10">
+                    {% for person in staff %}
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-64 h-64 rounded-full overflow-hidden mb-10 shadow-2xl border-[12px] border-white ring-1 ring-slate-100">
+                                {% if person.photo %}
+                                    <img src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-slate-400">Rasm yo'q</div>
+                                {% endif %}
+                            </div>
+                            <h3 class="text-2xl font-black text-slate-900 mb-2">{{ person.full_name }}</h3>
+                            <p class="text-slate-600 text-base leading-relaxed">{{ person.position }}</p>
+                            <div class="mt-4 text-xs text-slate-400 space-y-1">
+                                <p>{{ person.phone|default:"Noma'lum" }}</p>
+                                <p>{{ person.reception_hours|default:"Noma'lum" }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-full py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-400">Ma'lumotlar kiritilmagan</div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const tabs = document.querySelectorAll('.about-tab');
+    const sections = {
+        info: document.getElementById('about-info'),
+        structure: document.getElementById('about-structure'),
+        leadership: document.getElementById('about-leadership'),
+        staff: document.getElementById('about-staff')
+    };
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            tabs.forEach(function (t) {
+                t.className = 'about-tab px-6 py-2 rounded-lg font-medium bg-gray-100 text-gray-600';
+            });
+            tab.className = 'about-tab px-6 py-2 rounded-lg font-medium bg-blue-700 text-white';
+
+            Object.values(sections).forEach(function (section) { section.classList.add('hidden'); });
+            const key = tab.getAttribute('data-target');
+            sections[key].classList.remove('hidden');
+        });
+    });
+})();
+</script>
+{% endblock %}

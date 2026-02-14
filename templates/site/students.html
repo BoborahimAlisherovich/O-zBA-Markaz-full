@@ -1,0 +1,102 @@
+{% extends "site/base.html" %}
+
+{% block title %}Tinglovchilar uchun | O'zBA Malaka oshirish markazi{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen pb-20">
+    <div class="bg-blue-900 text-white py-20">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-4">Tinglovchilar uchun</h1>
+            <p class="text-blue-200">Malaka oshirish rejalari, me'yoriy hujjatlar va foydali eslatmalar.</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 -mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <section class="bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold mb-6 text-blue-900">Malaka oshirish rejasidan qidirish</h2>
+                <div class="flex flex-col sm:flex-row gap-3 mb-8">
+                    <input id="student-search" type="text" placeholder="F.I.SH, ish joyi yoki yo'nalishni kiriting..." class="flex-grow border border-gray-300 rounded-xl px-4 py-3">
+                    <button id="student-search-btn" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold">Qidirish</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-3 border-b">F.I.SH</th>
+                                <th class="px-4 py-3 border-b">Asosiy ish joyi</th>
+                                <th class="px-4 py-3 border-b">Malaka oshirish yo'nalishi</th>
+                                <th class="px-4 py-3 border-b">Malaka oshirish vaqti</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-results" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl shadow-sm border p-8">
+                <h2 class="text-2xl font-bold mb-6 text-blue-900">Me'yoriy hujjatlar</h2>
+                <div class="space-y-4">
+                    {% for doc in regulatory_docs %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                            <div>
+                                <h4 class="font-bold text-gray-900">{{ doc.title }}</h4>
+                                <p class="text-xs text-gray-500">{{ doc.created_at|date:"d.m.Y" }} da yuklangan</p>
+                            </div>
+                            {% if doc.file %}
+                                <a href="{{ doc.file.url }}" target="_blank" class="text-blue-600 text-sm font-bold">Ko'rish</a>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-10 border-2 border-dashed rounded-xl text-gray-500">Me'yoriy hujjatlar yuklanmoqda.</div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <div class="space-y-8">
+            <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100 sticky top-24">
+                <h3 class="text-xl font-bold mb-6 text-amber-900">Tinglovchilarga eslatma</h3>
+                <p class="text-sm text-amber-900 leading-relaxed whitespace-pre-wrap">{{ student_notes|default:"Tinglovchilar uchun eslatma matni..." }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ students_records_json|json_script:"students-records" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const records = JSON.parse(document.getElementById('students-records').textContent || '[]');
+    const input = document.getElementById('student-search');
+    const btn = document.getElementById('student-search-btn');
+    const tbody = document.getElementById('student-results');
+
+    function renderRows(items) {
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-slate-400">Ma\'lumot topilmadi</td></tr>';
+            return;
+        }
+        tbody.innerHTML = items.map(function (res) {
+            return '<tr class="hover:bg-blue-50"><td class="px-4 py-4 font-medium">' + (res.full_name || '') + '</td><td class="px-4 py-4">' + (res.workplace || '') + '</td><td class="px-4 py-4">' + (res.course_name || '') + '</td><td class="px-4 py-4">' + (res.training_time || '-') + '</td></tr>';
+        }).join('');
+    }
+
+    btn.addEventListener('click', function () {
+        const q = (input.value || '').trim().toLowerCase();
+        if (!q) {
+            tbody.innerHTML = '';
+            return;
+        }
+        const results = records.filter(function (p) {
+            return (p.full_name || '').toLowerCase().includes(q)
+                || (p.workplace || '').toLowerCase().includes(q)
+                || (p.course_name || '').toLowerCase().includes(q);
+        });
+        renderRows(results);
+    });
+})();
+</script>
+{% endblock %}
