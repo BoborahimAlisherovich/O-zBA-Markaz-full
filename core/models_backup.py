@@ -2,6 +2,8 @@
 Models for the Educational Center Management System.
 Following Django best practices and PEP8 standards.
 """
+
+#Ulug'bek uchun test uchun yozilgan model fayli, aslida models.py deb nomlanishi kerak edi, lekin test uchun models_backup.py deb nomlandi.
 import os
 import uuid
 from django.db import models
